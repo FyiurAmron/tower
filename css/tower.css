@@ -15,7 +15,8 @@ h1 {
 #statPanel, #inventoryPanel {
 }
 
-#board, #boardBackground {
+#boardBackground, #boardForeground {
+    position: absolute;
     line-height: 0;
 }
 
@@ -23,29 +24,82 @@ h1 {
     position: relative;
 }
 
-#board, #boardBackground {
-    position: absolute;
-}
-
 .tile {
     height: 32px;
     width: 32px;
     display: inline-block;
     background-image: url( "../img/tiles1.png" );
+    position: absolute;
 }
 
-.tile-fg-type-empty {
+.tile-type-undefined {
     opacity: 0;
 }
 
-.tile-fg-type-22 {
-    animation-name: fadeAnim;
-    animation-duration: 1s;
-    animation-iteration-count: infinite;
-    animation-direction: alternate;
+.tile-type-12 {
+    animation: lavaAnim 1s infinite step-end;
+}
+
+.tile-type-4 {
+    animation: slideRightAnim 1s infinite alternate;
+}
+
+.tile-type-22 {
+    animation: fadeAnim 1s infinite alternate;
+}
+
+.tile-type-31 {
+    animation: shakeAnim 1s infinite;
+}
+
+.tile-type-76 {
+    animation: skeletonAnim 1s infinite step-end;
+}
+
+.tile-type-78 {
+    animation: skewAnim 1s infinite;
+}
+
+@keyframes skeletonAnim {
+    0%   { background-position: calc( 10 * -32px ) calc(  6 * -32px ); transform: skewX(  5deg ); }
+    50%  { background-position: calc(  0 * -32px ) calc(  7 * -32px ); transform: skewX( -5deg ); }
+}
+
+@keyframes skewAnim {
+    0%   { transform: skewX( 0 ); }
+    50%  { transform: skewX( 0 ); }
+    60%  { transform: skewX( -15deg ); }
+    65%  { transform: skewX( 15deg ); }
+    70%  { transform: skewX( -10deg ); }
+    75%  { transform: skewX( 10deg ); }
+    85%  { transform: skewX( -5deg ); }
+    90%  { transform: skewX( 5deg ); }
+    100% { transform: skewX( 0 ); }
+}
+
+@keyframes lavaAnim {
+    0%   { background-position: calc(  1 * -32px ) calc(  1 * -32px ); }
+    50%  { background-position: calc(  5 * -32px ) calc( 14 * -32px ); }
+}
+
+@keyframes slideRightAnim {
+    0%   { transform: translateX( 0 ); }
+    100% { transform: translateX( 32px ); }
 }
 
 @keyframes fadeAnim {
     0%   { opacity: 0; }
     100% { opacity: 1; }
+}
+
+@keyframes shakeAnim {
+    0%   { transform: rotate( 0 ); }
+    50%  { transform: rotate( 0 ); }
+    60%  { transform: rotate( -15deg ); }
+    65%  { transform: rotate( 15deg ); }
+    70%  { transform: rotate( -10deg ); }
+    75%  { transform: rotate( 10deg ); }
+    85%  { transform: rotate( -5deg ); }
+    90%  { transform: rotate( 5deg ); }
+    100% { transform: rotate( 0 ); }
 }
