@@ -7,7 +7,7 @@ h1 {
     text-align: center;
 }
 
-#statPanel, #inventoryPanel, #board, #boardBackground {
+#statPanel, #inventoryPanel, #gamePanel {
     margin: 0 auto;
     /* display: block; */
 }
@@ -19,8 +19,12 @@ h1 {
     line-height: 0;
 }
 
-#board {
+#gamePanel {
     position: relative;
+}
+
+#board, #boardBackground {
+    position: absolute;
 }
 
 .tile {
@@ -30,9 +34,18 @@ h1 {
     background-image: url( "../img/tiles1.png" );
 }
 
-/*
-@keyframes anim {
-  0%   { opacity: 0; }
-  100% { opacity: 1; }
+.tile-fg-type-empty {
+    opacity: 0;
 }
-*/
+
+.tile-fg-type-22 {
+    animation-name: fadeAnim;
+    animation-duration: 1s;
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+}
+
+@keyframes fadeAnim {
+    0%   { opacity: 0; }
+    100% { opacity: 1; }
+}
