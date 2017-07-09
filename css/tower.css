@@ -20,8 +20,13 @@ h1 {
     line-height: 0;
 }
 
-#gamePanel {
+#gamePanel, #inventoryPanel {
     position: relative;
+}
+
+#inventoryPanel {
+    height: 32px;
+    z-index: 1;
 }
 
 .tile {
@@ -42,6 +47,7 @@ h1 {
 
 .tile-type-4 {
     animation: slideRightAnim 1s infinite alternate;
+    z-index: 0;
 }
 
 .tile-type-22 {
@@ -50,6 +56,10 @@ h1 {
 
 .tile-type-31 {
     animation: shakeAnim 1s infinite;
+}
+
+.tile-type-48 {
+    animation: scaleAnim 1s infinite alternate;
 }
 
 .tile-type-76 {
@@ -63,6 +73,11 @@ h1 {
 @keyframes skeletonAnim {
     0%   { background-position: calc( 10 * -32px ) calc(  6 * -32px ); transform: skewX(  5deg ); }
     50%  { background-position: calc(  0 * -32px ) calc(  7 * -32px ); transform: skewX( -5deg ); }
+}
+
+@keyframes scaleAnim {
+    0%   { transform: scale( 1.0 ); }
+    100% { transform: scale( 1.5 ); }
 }
 
 @keyframes skewAnim {

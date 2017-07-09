@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 
 /* jslint bitwise: true */
 /* jslint node: true */
@@ -25,6 +25,8 @@ function readFile( filename, callback ) {
 
 // business logic
 
+const DATA_DIR = "data/";
+
 const TILE_SIZE_X = 32;
 const TILE_SIZE_Y = 32;
 const TILESET_WIDTH = 11;
@@ -35,8 +37,31 @@ const BOARD_SIZE_X = 16;
 const BOARD_SIZE_Y = 24;
 const BOARD_SIZE_TOTAL = BOARD_SIZE_X * BOARD_SIZE_Y;
 
+const INVENTORY_SIZE = BOARD_SIZE_X;
+
+// DOM-related
+
+const DIV_TAG = "div";
+
+const TILE_CLASS = "tile";
+/* const TYPE_SUFFIX = "-type-"; */
+const BOARD_ROW_CLASS = "board-row";
+const INVENTORY_TILE_CLASS = "inventory-tile";
+const INVENTORY_ROW_CLASS = "inventory-row";
+const INVENTORY_ROW_PREFIX = INVENTORY_ROW_CLASS + "-";
+const TILE_TYPE_CLASS_PREFIX = TILE_CLASS + "-type-";
+
+const id = {
+    boardBackground: "boardBackground",
+    boardForeground: "boardForeground",
+    statPanel: "statPanel",
+    inventoryPanel: "inventoryPanel",
+    gamePanel: "gamePanel",
+};
+
 class Board {
   constructor( size, nameId ) {
+    this.size = size;
     this.dom = null;
     this.tiles = new Array( size );
     this.content = new Array( size );
@@ -66,11 +91,10 @@ class Board {
         tile.style.left = x * TILE_SIZE_X + "px";
         tile.style.top = y * TILE_SIZE_Y + "px";
         row.appendChild( tile );
-        //this.setElement( i, undefined );
     }
   }
 
-  setElement( elemIdx, typeId ) {
+  setElement( elemIdx, typeId ) { // TODO setContent/updateCell
     var tileDom = this.tiles[elemIdx];
 
     this.content[elemIdx] = typeId;
@@ -89,60 +113,106 @@ class Board {
     var tilesetY = ( ( typeId / TILESET_WIDTH ) | 0 ) * TILE_SIZE_Y;
     tileDom.style.backgroundPosition = "-" + tilesetX + "px -" + tilesetY + "px";
   }
+
+  update() {
+    // TODO
+  }
 }
 
-const INVENTORY_SIZE = BOARD_SIZE_X;
+class Inventory {
+  constructor( size ) {
+    this.size = size;
+    this.tiles = new Array( size );
+    this.content = new Array( size );
+  }
 
-// DOM-related
+  init( dom ) {
+    dom.innerHTML = "";
+    var ts = this.tiles;
+    var row = document.createElement( DIV_TAG );
+    row.classList.add( INVENTORY_ROW_CLASS );
+    row.id = INVENTORY_ROW_PREFIX + "0";
+    dom.appendChild( row );
+    for ( var i = 0, x = 0, y = 0; i < INVENTORY_SIZE; i++, x++ ) {
+        var tile = document.createElement( DIV_TAG );
+        tile.classList.add( TILE_CLASS );
+        ts[i] = tile;
+        if ( x === BOARD_SIZE_X ) {
+            row = document.createElement( DIV_TAG );
+            row.classList.add( INVENTORY_ROW_CLASS );
+            y++;
+            row.id = this.rowIdPrefix + y;
+            dom.appendChild( row );
+            x = 0;
+        }
+        tile.style.left = x * TILE_SIZE_X + "px";
+        tile.style.top = y * TILE_SIZE_Y + "px";
+        row.appendChild( tile );
+    }
+  }
 
-const DIV_TAG = "div";
+  setContent( elemIdx, typeId ) {
+      this.content[elemIdx] = typeId;
+      updateTile( elemIdx );
+  }
 
-const TILE_CLASS = "tile";
-/* const TYPE_SUFFIX = "-type-"; */
-const BOARD_ROW_CLASS = "board-row";
-/* const TILE_EMPTY_CLASS_SUFFIX = "empty"; */
-const TILE_TYPE_CLASS_PREFIX = TILE_CLASS + "-type-";
+  updateTile( elemIdx ) {
+    var tileDom = this.tiles[elemIdx];
+    var typeId = this.content[elemIdx];
 
-const id = {
-    boardBackground: "boardBackground",
-    boardForeground: "boardForeground",
-    statPanel: "statPanel",
-    inventoryPanel: "inventoryPanel",
-    gamePanel: "gamePanel",
+    tileDom.className = "";
+    var cl = tileDom.classList;
+    cl.add( TILE_CLASS );
+    cl.add( INVENTORY_TILE_CLASS );
+    cl.add( TILE_TYPE_CLASS_PREFIX + typeId );
+
+    if ( typeId === undefined ) {
+        return;
+    }
+
+    var tilesetX = ( ( typeId % TILESET_WIDTH ) | 0 ) * TILE_SIZE_X;
+    var tilesetY = ( ( typeId / TILESET_WIDTH ) | 0 ) * TILE_SIZE_Y;
+    tileDom.style.backgroundPosition = "-" + tilesetX + "px -" + tilesetY + "px";
+  }
+
+  update() {
+    for( var i = this.size - 1; i >= 0; i-- ) {
+        this.updateTile( i );
+    }
+  }
+}
+
+class Hero {
+  constructor() {
+    var proto = Hero.heroProto;
+    for( var v in proto ) {
+        if ( proto.hasOwnProperty( v ) ) {
+            this[v] = proto[v];
+        }
+    }
+  }
+
+  init( dom ) {
+    this.inv.init( dom );
+  }
+}
+
+Hero.heroProto = {
+    x: 0, y: 0, z: 0,
+    hp: 100, att: 10, def: 10, spd: 10,
+    xp: 0, level: 0, gold: 0,
+    inv: new Inventory( INVENTORY_SIZE ),
 };
-
-const mapBgCharRaw = [
-    [ '#', 7 ],
-    [ '~', 12 ],
-    [ '^', 13 ],
-    [ 'B', 13 ],
-];
-
-const mapFgCharRaw = [
-    [ '+', 0 ],
-    [ '&', 4 ],
-    [ '>', 10 ],
-    [ '<', 11 ],
-    [ 'B', 22 ],
-    [ '!', 31 ],
-    [ '|', 32 ],
-    [ 'z', 76 ],
-    [ 'Z', 78 ],
-];
 
 class Game {
   constructor() {
-    this.hero = {
-      x: 0, y: 0, z: 0,
-      hp: 100, att: 10, def: 10,
-      xp: 0, level: 0, gold: 0,
-      inv: new Array( INVENTORY_SIZE ),
-    };
+    this.hero = new Hero();
     this.bg = new Board( BOARD_SIZE_TOTAL, "bg" );
     this.fg = new Board( BOARD_SIZE_TOTAL, "fg" );
     this.dom = {};
-    this.mapBgCharMap = new Map( mapBgCharRaw );
-    this.mapFgCharMap = new Map( mapFgCharRaw );
+    this.mapBgCharMap = null;
+    this.mapFgCharMap = null;
+    this.jsonData = null;
   }
 
   setFgXY( x, y, typeId ) {
@@ -153,10 +223,6 @@ class Game {
     this.fg.setElement( x + y * BOARD_SIZE_X, typeId );
   }
 
-  createInventory() {
-
-  }
-
   updateTitle() {
     var hero = this.hero;
     document.title = "X: " + hero.x + "\u2007 Y: " + hero.y + "\u2007 Z: " + hero.z;
@@ -164,52 +230,57 @@ class Game {
 
   updateStats() {
     var hero = this.hero;
-    this.dom.statPanel.innerHTML = "HP: " + hero.hp + " ATT: " + hero.att + " DEF: " + hero.def
+    this.dom.statPanel.innerHTML = "HP: " + hero.hp + " ATT: " + hero.att + " DEF: " + hero.def + " SPD: " + hero.spd
                            + "<br />XP: " + hero.xp + " LEV: " + hero.level + " $$: " + hero.gold;
   }
 
-  updateInventory() {
-
-  }
-
-  updateBoard() {
-
-  }
-
-  update() {
+  update( quickUpdate ) {
     this.updateTitle();
     this.updateStats();
-    this.updateInventory();
-    this.updateBoard();
+    this.hero.inv.update();
+
+    if ( !quickUpdate ) {
+        this.bg.update();
+        this.fg.update();
+    }
   }
 
-  loadMap( mapNr ) {
+  loadJsonData( dataFilename, callback ) {
+      var that = this;
+      readFile( DATA_DIR + dataFilename, function( dataStr ) {
+          that.jsonData = JSON.parse( dataStr );
+          callback();
+      } );
+  }
+
+  loadMap( mapNr, callback ) {
     var bg = this.bg;
     var fg = this.fg;
     var bgIdMap = this.mapBgCharMap;
     var fgIdMap = this.mapFgCharMap;
 
-    readFile( "data/map" + mapNr + ".txt", function( mapStr ) {
+    readFile( DATA_DIR + "map" + mapNr + ".txt", function( mapStr ) {
         for ( var i = 0, pos = -1, len = mapStr.length; i < len; i++ ) {
             var c = mapStr.charAt( i );
-            if ( c === '\n' || c === '\r' ) {
-                continue;            
+            if ( c === "\n" || c === "\r" ) {
+                continue;
             }
             pos++;
 
             var typeIdBg = bgIdMap.get( c );
             var typeIdFg = fgIdMap.get( c );
-            
+
             if ( typeIdBg === undefined ) {
                 if ( typeIdFg === undefined ) {
                     console.log( "unknown map char '" + c + "' [0x" + c.charCodeAt( 0 ).toString( 16 ) + "]" );
                 }
                 typeIdBg = DEFAULT_BACKGROUND_TYPE;
             }
-           
+
             bg.setElement( pos, typeIdBg );
             fg.setElement( pos, typeIdFg );
         }
+        callback();
     } );
   }
 
@@ -222,6 +293,7 @@ class Game {
     dom.boardForeground = document.getElementById( id.boardForeground );
     dom.gamePanel = document.getElementById( id.gamePanel );
 
+    this.hero.init( dom.inventoryPanel );
     this.bg.init( dom.boardBackground );
     this.fg.init( dom.boardForeground );
 
@@ -232,11 +304,14 @@ class Game {
     //dom.boardBackground.style = widthStr;
     //dom.board.style = widthStr;
 
-    dom.statPanel.innerHTML = "";
-    dom.inventoryPanel.innerHTML = "";
-
-    this.loadMap( "0" );
-    this.update();
+    var that = this;
+    this.loadJsonData( "charMap.json", function() {
+        that.mapBgCharMap = new Map( that.jsonData.mapBgCharRaw );
+        that.mapFgCharMap = new Map( that.jsonData.mapFgCharRaw );
+        that.loadMap( "0", function() {
+            that.update( false );
+        } );
+    } );
   }
 }
 
@@ -246,4 +321,7 @@ var game;
 window.onload = function() {
     game = new Game();
     game.init();
+    game.hero.inv.content[2] = 55;
+    game.hero.inv.content[5] = 48;
+    game.hero.inv.update();
 };
