@@ -2,7 +2,7 @@
 
 const IMPORT_SCRIPTS = [
   "const.js", "helper.js",
-  "inventory.js", "board.js", "hero.js",
+  "tileset.js", "inventory.js", "board.js", "hero.js",
   "game.js"
 ];
 
@@ -48,9 +48,14 @@ function jsLoader( srcs, callback ) {
 window.onload = function() {
     jsLoader( IMPORT_SCRIPTS, function() {
         var game = new Game();
-        game.init();
-        game.hero.inv.content[2] = 55;
-        game.hero.inv.content[5] = 48;
-        game.hero.inv.update();
+
+// init debug here
+        game.inv.content[2] = 55;
+        game.inv.content[5] = 48;
+// end of init debug
+
+        game.init( function() {
+          document.getElementById( "mainPanel" ).style.display = "initial";
+        } );
     } );
 };

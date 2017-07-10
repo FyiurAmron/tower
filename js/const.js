@@ -10,7 +10,7 @@ const DATA_DIR = "data/";
 
 const TILE_SIZE_X = 32;
 const TILE_SIZE_Y = 32;
-const TILESET_WIDTH = 11;
+const TILESET_COLUMNS = 11;
 
 const DEFAULT_BACKGROUND_TYPE = 5;
 

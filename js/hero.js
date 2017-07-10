@@ -11,15 +11,10 @@ class Hero {
         }
     }
   }
-
-  init( dom ) {
-    this.inv.init( dom );
-  }
 }
 
 Hero.heroProto = {
     x: 0, y: 0, z: 0,
     hp: 100, att: 10, def: 10, spd: 10,
-    xp: 0, level: 0, gold: 0,
-    inv: new Inventory( INVENTORY_SIZE ),
+    xp: 0, level: 0, gold: 0
 };

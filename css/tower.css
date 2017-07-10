@@ -1,10 +1,14 @@
 /* tower.css */
 
-body {
+html, body {
 }
 
 h1 {
     text-align: center;
+}
+
+#mainPanel {
+    display: none;
 }
 
 #statPanel, #inventoryPanel, #gamePanel {
