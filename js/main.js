@@ -47,6 +47,13 @@ function jsLoader( srcs, callback ) {
 //document.addEventListener('DOMContentLoaded', game.init );
 window.onload = function() {
     jsLoader( IMPORT_SCRIPTS, function() {
+      readFile( "css/tower.template.css", function( cssStr ) {
+        var css = document.createElement( "style" );
+        css.innerHTML = cssStr
+          .replace( /%%tileX%%/g, TILE_SIZE_X )
+          .replace( /%%tileY%%/g, TILE_SIZE_Y );
+        document.head.appendChild( css );
+
         var game = new Game();
 
 // init debug here
@@ -57,5 +64,6 @@ window.onload = function() {
         game.init( function() {
           document.getElementById( "mainPanel" ).style.display = "initial";
         } );
+      } );
     } );
 };

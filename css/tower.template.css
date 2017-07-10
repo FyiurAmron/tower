@@ -29,16 +29,20 @@ h1 {
 }
 
 #inventoryPanel {
-    height: 32px;
+    height: %%tileY%%px;
     z-index: 1;
 }
 
 .tile {
-    height: 32px;
-    width: 32px;
+    width: %%tileX%%px;
+    height: %%tileY%%px;
     display: inline-block;
-    background-image: url( "../img/tiles1.png" );
     position: absolute;
+}
+
+.tile > div {
+    height: 100%;
+    background-image: url( "../img/tiles1.png" );
 }
 
 .tile-type-undefined {
@@ -75,8 +79,8 @@ h1 {
 }
 
 @keyframes skeletonAnim {
-    0%   { background-position: calc( 10 * -32px ) calc(  6 * -32px ); transform: skewX(  5deg ); }
-    50%  { background-position: calc(  0 * -32px ) calc(  7 * -32px ); transform: skewX( -5deg ); }
+    0%   { background-position: calc( 10 * -%%tileX%%px ) calc(  6 * -%%tileY%%px ); transform: skewX(  5deg ); }
+    50%  { background-position: calc(  0 * -%%tileX%%px ) calc(  7 * -%%tileY%%px ); transform: skewX( -5deg ); }
 }
 
 @keyframes scaleAnim {
@@ -97,13 +101,13 @@ h1 {
 }
 
 @keyframes lavaAnim {
-    0%   { background-position: calc(  1 * -32px ) calc(  1 * -32px ); }
-    50%  { background-position: calc(  5 * -32px ) calc( 14 * -32px ); }
+    0%   { background-position: calc(  1 * -%%tileX%%px ) calc(  1 * -%%tileY%%px ); }
+    50%  { background-position: calc(  5 * -%%tileX%%px ) calc( 14 * -%%tileY%%px ); }
 }
 
 @keyframes slideRightAnim {
     0%   { transform: translateX( 0 ); }
-    100% { transform: translateX( 32px ); }
+    100% { transform: translateX( %%tileX%%px ); }
 }
 
 @keyframes fadeAnim {

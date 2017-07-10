@@ -30,6 +30,8 @@ class TileSet {
             dom.appendChild( row );
             x = 0;
         }
+        var inner = document.createElement( DIV_TAG );
+        tile.appendChild( inner );
         tile.style.left = x * this.tileSizeX + "px";
         tile.style.top = y * this.tileSizeY + "px";
         row.appendChild( tile );
@@ -48,6 +50,7 @@ class TileSet {
         return;
     }
 
+    tileDom = tileDom.firstChild;
     var posX = ( ( typeId % this.tilesetColumns ) | 0 ) * this.tileSizeX;
     var posY = ( ( typeId / this.tilesetColumns ) | 0 ) * this.tileSizeY;
     tileDom.style.backgroundPosition = "-" + posX + "px -" + posY + "px";
