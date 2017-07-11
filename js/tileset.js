@@ -12,6 +12,19 @@ class TileSet {
     this.tileTypeClassPrefix = tileTypeClassPrefix;
   }
 
+  createTile() {
+    var tile = document.createElement( DIV_TAG );
+    tile.classList.add( this.tileClass );
+    var inner = document.createElement( DIV_TAG );
+    tile.appendChild( inner );
+    return tile;
+  }
+
+  setTilePos( tileDom, x, y ) {
+    tileDom.style.left = x * this.tileSizeX + "px";
+    tileDom.style.top = y * this.tileSizeY + "px";
+  }
+
   createMatrix( dom, size, rowSize, rowClass, rowIdPrefix ) {
     var row = document.createElement( DIV_TAG );
     var tiles = new Array( size );
@@ -19,9 +32,6 @@ class TileSet {
     row.id = rowIdPrefix + "0";
     dom.appendChild( row );
     for ( var i = 0, x = 0, y = 0; i < size; i++, x++ ) {
-        var tile = document.createElement( DIV_TAG );
-        tile.classList.add( this.tileClass );
-        tiles[i] = tile;
         if ( x === rowSize ) {
             row = document.createElement( DIV_TAG );
             row.classList.add( rowClass );
@@ -30,10 +40,9 @@ class TileSet {
             dom.appendChild( row );
             x = 0;
         }
-        var inner = document.createElement( DIV_TAG );
-        tile.appendChild( inner );
-        tile.style.left = x * this.tileSizeX + "px";
-        tile.style.top = y * this.tileSizeY + "px";
+        var tile = this.createTile();
+        tiles[i] = tile;
+        this.setTilePos( tile, x, y );
         row.appendChild( tile );
     }
     return tiles;

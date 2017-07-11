@@ -5,15 +5,17 @@
 
 class Game {
   constructor() {
-    this.hero = new Hero();
+    this.hero = null;
+    this.heroTile = null;
     this.tileset = new TileSet( TILE_SIZE_X, TILE_SIZE_Y, TILESET_COLUMNS, TILE_CLASS, TILE_TYPE_CLASS_PREFIX );
-    this.bg = new Board( this.tileset, BOARD_SIZE_TOTAL, "bg" );
-    this.fg = new Board( this.tileset, BOARD_SIZE_TOTAL, "fg" );
+    this.bg = new Board( this.tileset, BOARD_SIZE_X, BOARD_SIZE_Y, "bg" );
+    this.fg = new Board( this.tileset, BOARD_SIZE_X, BOARD_SIZE_Y, "fg" );
     this.inv = new Inventory( this.tileset, INVENTORY_SIZE );
     this.dom = {};
-    this.mapBgCharMap = null;
-    this.mapFgCharMap = null;
-    this.jsonData = null;
+    this.stageBgCharMap = null;
+    this.stageFgCharMap = null;
+    this.data = new Data();
+    this.ready = false;
   }
 
   init( callback ) {
@@ -37,10 +39,33 @@ class Game {
     //dom.board.style = widthStr;
 
     var that = this;
-    this.loadJsonData( "charMap.json", function() {
-        that.mapBgCharMap = new Map( that.jsonData.mapBgCharRaw );
-        that.mapFgCharMap = new Map( that.jsonData.mapFgCharRaw );
-        that.loadMap( "0", function() {
+    var d = this.data;
+    d.init( function() {
+        that.hero = new Hero( d.proto.hero );
+        var h = that.hero;
+
+        var cm = d.charMap;
+        that.stageBgCharMap = new Map( cm.stageBgCharRaw );
+        that.stageFgCharMap = new Map( cm.stageFgCharRaw );
+        that.stageNameMap = new Map( d.stageNameMap.raw );
+        that.loadMap( that.stageNameMap.get( h.z ), function() {
+            that.setFgXY( h.x, h.y, h.typeId );
+            var fg = that.fg;
+            for( let i = 0, x = 0, y = 0, max = fg.size; i < max; i++, x++ ) {
+                if ( x === fg.x ) {
+                    x = 0;
+                    y++;
+                }
+                fg.tiles[i].addEventListener( "click", function() {
+                    //alert( "i: " + i + " X: " + x + " Y: " + y );
+                    if ( fg.content[i] === undefined ) {
+                          that.setFgXY( h.x, h.y, undefined );
+                          that.setFgXY( x, y, h.typeId );
+                          h.x = x;
+                          h.y = y;
+                    }
+                } );
+            }
             that.update( false, function() {
                 callback();
             } );
@@ -48,12 +73,12 @@ class Game {
     } );
   }
 
-  setFgXY( x, y, typeId ) {
-    this.bg.setElement( x + y * BOARD_SIZE_X, typeId );
+  setBgXY( x, y, typeId ) {
+    this.bg.setContent( x + y * BOARD_SIZE_X, typeId );
   }
 
-  setBgXY( x, y, typeId ) {
-    this.fg.setElement( x + y * BOARD_SIZE_X, typeId );
+  setFgXY( x, y, typeId ) {
+    this.fg.setContent( x + y * BOARD_SIZE_X, typeId );
   }
 
   updateTitle() {
@@ -78,23 +103,16 @@ class Game {
     }
 
     callback();
-  }
-
-  loadJsonData( dataFilename, callback ) {
-      var that = this;
-      readFile( DATA_DIR + dataFilename, function( dataStr ) {
-          that.jsonData = JSON.parse( dataStr );
-          callback();
-      } );
+    this.ready = true;
   }
 
   loadMap( mapNr, callback ) {
     var bg = this.bg;
     var fg = this.fg;
-    var bgIdMap = this.mapBgCharMap;
-    var fgIdMap = this.mapFgCharMap;
+    var bgIdMap = this.stageBgCharMap;
+    var fgIdMap = this.stageFgCharMap;
 
-    readFile( DATA_DIR + "map" + mapNr + ".txt", function( mapStr ) {
+    readFile( DATA_PATH + "map" + mapNr + ".txt", true, function( mapStr ) {
         for ( var i = 0, pos = -1, len = mapStr.length; i < len; i++ ) {
             var c = mapStr.charAt( i );
             if ( c === "\n" || c === "\r" ) {

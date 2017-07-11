@@ -4,12 +4,14 @@
 /* jslint node: true */
 
 class Board {
-  constructor( tileset, size, nameId ) {
+  constructor( tileset, x, y, nameId ) {
     this.tileset = tileset;
-    this.size = size;
+    this.x = x;
+    this.y = y;
+    this.size = x * y;
     this.dom = null;
-    this.tiles; // = new Array( size );
-    this.content = new Array( size );
+    this.tiles = null;
+    this.content = new Array( this.size );
     this.tileClass = TILE_CLASS + "-" + nameId;
     this.rowIdPrefix = BOARD_ROW_CLASS + "-" + nameId + "-";
   }

@@ -7,37 +7,43 @@ h1 {
     text-align: center;
 }
 
-#mainPanel {
+#main-panel {
     display: none;
 }
 
-#statPanel, #inventoryPanel, #gamePanel {
+#stat-panel, #inventory-panel, #game-panel {
     margin: 0 auto;
     /* display: block; */
 }
 
-#statPanel, #inventoryPanel {
+#stat-panel, #inventory-panel {
 }
 
-#boardBackground, #boardForeground {
+#board-background, #board-foreground {
     position: absolute;
     line-height: 0;
 }
 
-#gamePanel, #inventoryPanel {
+#game-panel, #inventory-panel {
     position: relative;
 }
 
-#inventoryPanel {
-    height: %%tileY%%px;
+#inventory-panel {
+    height: %%tileSizeY%%px;
+    padding: calc( %%tileSizeY%%px / 2 ) 0;
     z-index: 1;
 }
 
+.inventory-row {
+    position: relative;
+}
+
 .tile {
-    width: %%tileX%%px;
-    height: %%tileY%%px;
+    width: %%tileSizeX%%px;
+    height: %%tileSizeY%%px;
     display: inline-block;
     position: absolute;
+    transition: opacity 1s;
 }
 
 .tile > div {
@@ -49,38 +55,54 @@ h1 {
     opacity: 0;
 }
 
-.tile-type-12 {
+.tile-type-12 > div {
     animation: lavaAnim 1s infinite step-end;
 }
 
-.tile-type-4 {
+.tile-type-4 > div {
     animation: slideRightAnim 1s infinite alternate;
     z-index: 0;
 }
 
-.tile-type-22 {
+/*
+.tile-type-20 {
+    transition: all 1s;
+}
+*/
+
+.tile-type-20 > div {
+    animation: rogueAnim 1s infinite step-end;
+    /* filter: hue-rotate(90deg); */
+}
+
+.tile-type-22 > div {
     animation: fadeAnim 1s infinite alternate;
 }
 
-.tile-type-31 {
+.tile-type-31 > div {
     animation: shakeAnim 1s infinite;
 }
 
-.tile-type-48 {
+.tile-type-48 > div {
     animation: scaleAnim 1s infinite alternate;
 }
 
-.tile-type-76 {
+.tile-type-76 > div {
     animation: skeletonAnim 1s infinite step-end;
 }
 
-.tile-type-78 {
+.tile-type-78 > div {
     animation: skewAnim 1s infinite;
 }
 
 @keyframes skeletonAnim {
-    0%   { background-position: calc( 10 * -%%tileX%%px ) calc(  6 * -%%tileY%%px ); transform: skewX(  5deg ); }
-    50%  { background-position: calc(  0 * -%%tileX%%px ) calc(  7 * -%%tileY%%px ); transform: skewX( -5deg ); }
+    0%   { background-position: calc( 10 * -%%tileSizeX%%px ) calc(  6 * -%%tileSizeY%%px ); transform: skewX(  5deg ); }
+    50%  { background-position: calc(  0 * -%%tileSizeX%%px ) calc(  7 * -%%tileSizeY%%px ); transform: skewX( -5deg ); }
+}
+
+@keyframes rogueAnim {
+    0%   { background-position: calc(  9 * -%%tileSizeX%%px ) calc(  1 * -%%tileSizeY%%px ); }
+    50%  { background-position: calc( 10 * -%%tileSizeX%%px ) calc(  1 * -%%tileSizeY%%px ); }
 }
 
 @keyframes scaleAnim {
@@ -101,13 +123,13 @@ h1 {
 }
 
 @keyframes lavaAnim {
-    0%   { background-position: calc(  1 * -%%tileX%%px ) calc(  1 * -%%tileY%%px ); }
-    50%  { background-position: calc(  5 * -%%tileX%%px ) calc( 14 * -%%tileY%%px ); }
+    0%   { background-position: calc(  1 * -%%tileSizeX%%px ) calc(  1 * -%%tileSizeY%%px ); }
+    50%  { background-position: calc(  5 * -%%tileSizeX%%px ) calc( 14 * -%%tileSizeY%%px ); }
 }
 
 @keyframes slideRightAnim {
     0%   { transform: translateX( 0 ); }
-    100% { transform: translateX( %%tileX%%px ); }
+    100% { transform: translateX( %%tileSizeX%%px ); }
 }
 
 @keyframes fadeAnim {

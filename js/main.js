@@ -1,19 +1,19 @@
 "use strict";
 
+// scriptLoader
+
+const SCRIPT_PATH = "js/";
 const IMPORT_SCRIPTS = [
-  "const.js", "helper.js",
+  "const.js", "util.js", "data.js",
   "tileset.js", "inventory.js", "board.js", "hero.js",
   "game.js"
 ];
 
-// JS loader
-
 const HEAD_TAG = "head";
 const SCRIPT_TAG = "script";
-const JS_TYPE = "text/javascript";
-const JS_PATH = "js/";
+const SCRIPT_TYPE = "text/javascript";
 
-function jsLoader( srcs, callback ) {
+function scriptLoader( srcs, callback ) {
     var script;
     var head = document.getElementsByTagName( HEAD_TAG )[0];
     var cnt = srcs.length;
@@ -21,8 +21,8 @@ function jsLoader( srcs, callback ) {
 
     for( var i = 0; i < cnt; i++ ) {
         script = document.createElement( SCRIPT_TAG );
-        script.type = JS_TYPE;
-        script.src = JS_PATH + srcs[i];
+        script.type = SCRIPT_TYPE;
+        script.src = SCRIPT_PATH + srcs[i];
         scripts[i] = script;
     }
 
@@ -42,16 +42,16 @@ function jsLoader( srcs, callback ) {
     script.onload = callback;
 }
 
-// end of JS loader
+// end of scriptLoader
 
 //document.addEventListener('DOMContentLoaded', game.init );
 window.onload = function() {
-    jsLoader( IMPORT_SCRIPTS, function() {
-      readFile( "css/tower.template.css", function( cssStr ) {
+    scriptLoader( IMPORT_SCRIPTS, function() {
+      readFile( "css/tower.template.css", true, function( cssStr ) {
         var css = document.createElement( "style" );
         css.innerHTML = cssStr
-          .replace( /%%tileX%%/g, TILE_SIZE_X )
-          .replace( /%%tileY%%/g, TILE_SIZE_Y );
+          .replace( /%%tileSizeX%%/g, TILE_SIZE_X )
+          .replace( /%%tileSizeY%%/g, TILE_SIZE_Y );
         document.head.appendChild( css );
 
         var game = new Game();
@@ -62,7 +62,7 @@ window.onload = function() {
 // end of init debug
 
         game.init( function() {
-          document.getElementById( "mainPanel" ).style.display = "initial";
+          document.getElementById( "main-panel" ).style.display = "initial";
         } );
       } );
     } );

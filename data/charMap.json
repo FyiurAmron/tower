@@ -1,11 +1,11 @@
 {
-	"mapBgCharRaw": [
+	"stageBgCharRaw": [
 		[".", 5],
 		["~", 12],
 		["^", 13],
 		["B", 13]
 	],
-	"mapFgCharRaw": [
+	"stageFgCharRaw": [
 		["+", 0],
 		["&", 4],
 		["#", 7],
