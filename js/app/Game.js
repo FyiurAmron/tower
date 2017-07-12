@@ -24,6 +24,8 @@ class Game {
   init( callback ) {
     console.log( "game.init();" );
 
+    this.audio.bgmGain.gain.value = 0.2;
+
     var dom = this.dom;
 
     this.inv.init( dom.inventoryPanel );
@@ -81,8 +83,10 @@ class Game {
     var con = this.fg.getContentXY( x, y );
     if ( isAdjacent( x, y, h.x, h.y ) ) {
         // alert( "actor event @ [" + x + "," + y + "]" ); // TODO handle actor events
+        // TODO properly handle actor events
         switch ( con ) {
             case 76:
+                this.audio.fadeOutBgm();
                 var t = this.data.proto[this.protoMap.get( con )];
                 var dam;
                 dam = h.att - t.def;
@@ -96,8 +100,7 @@ class Game {
                 this.updateStats();
                 break;
             case 7:
-                this.audio.playNamed( "punch.mp3" );
-                //alert( "OOMPF!" ); // TODO handle actor events
+                this.audio.playSfx( "punch.mp3" );
                 break;
             case undefined:
                 this.fg.setContentXY( h.x, h.y, undefined );
@@ -114,15 +117,7 @@ class Game {
         h.y = y;
     }
   }
-/*
-  setBgXY( x, y, typeId ) {
-    this.bg.setContentXY( x, y, typeId );
-  }
 
-  setFgXY( x, y, typeId ) {
-    this.fg.setContentXY( x, y, typeId );
-  }
-*/
   updateTitle() {
     var hero = this.hero;
     document.title = "X: " + hero.x + "\u2007 Y: " + hero.y + "\u2007 Z: " + hero.z;
@@ -174,7 +169,7 @@ class Game {
             bg.setContent( pos, typeIdBg );
             fg.setContent( pos, typeIdFg );
         }
-        that.audio.playNamed( "bgm0" + mapNr + ".mp3", true );
+        that.audio.playBgm( "bgm0" + mapNr + ".mp3" );
         callback();
     } );
   }

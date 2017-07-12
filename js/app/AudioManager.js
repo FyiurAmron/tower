@@ -8,6 +8,8 @@ const AUDIO_FILES = [
   "punch.mp3", "bgm00.mp3",
 ];
 
+const DEFAULT_FADE_TIME = 2.0;
+
 class AudioManager {
   constructor( loadArray ) {
     this.loadArray = loadArray;
@@ -19,6 +21,14 @@ class AudioManager {
     this.bufferMap = new Map();
     this.activeLoopSources = new Set();
     this.activeLoopNames = new Map();
+
+    this.sfxGain = this.context.createGain();
+    this.bgmGain = this.context.createGain();
+
+    this.sfxGain.connect( this.context.destination );
+    this.bgmGain.connect( this.context.destination );
+
+    // TODO store base gain values (vs fades)
   }
 
   init( progressBarDom, callback ) {
@@ -54,34 +64,46 @@ class AudioManager {
 
   // TODO streaming music
 
-  play( buffer, looped ) {
+  playBgm( name ) {
+    return this.playNamed( name, true, this.bgmGain );
+  }
+
+  playSfx( name ) {
+    return this.playNamed( name, false, this.sfxGain );
+  }
+
+  play( buffer, looped, gainNode ) {
     var bs = this.context.createBufferSource();
     bs.buffer = buffer;
-    bs.connect( this.context.destination );
+    bs.connect( gainNode );
     //bs[bs.start ? 'start' : 'noteOn'](time);
     if ( looped ) {
         bs.loop = true;
-        this.activeLoopSources.add( buffer );
+        this.activeLoopSources.add( bs );
     }
     bs.start();
     return bs;
   }
 
-  playNamed( name, looped ) {
-    var bs = this.play( this.bufferMap.get( name ), looped );
+  playNamed( name, looped, gainNode ) {
+    var bs = this.play( this.bufferMap.get( name ), looped, gainNode );
     if ( looped ) {
         bs.loop = true;
         this.activeLoopNames.set( name, bs );
     }
+    return bs;
   }
 
 /*
   stopLoop( name ) {
   }
 */
+  fadeOutBgm() {
+    this.bgmGain.gain.linearRampToValueAtTime( 0.0, this.context.currentTime + DEFAULT_FADE_TIME );
+  }
 
   stopAllLoops() {
-    for( var loop of this.activeLoops ) {
+    for( var loop of this.activeLoopSources ) {
         loop.stop();
     }
   }
