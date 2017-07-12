@@ -4,30 +4,27 @@
 /* jslint laxbreak: true */
 
 class Game {
-  constructor() {
+  constructor( dom ) {
+    this.dom = dom;
+
     this.hero = null;
     this.heroTile = null;
     this.tileset = new TileSet( TILE_SIZE_X, TILE_SIZE_Y, TILESET_COLUMNS, TILE_CLASS, TILE_TYPE_CLASS_PREFIX );
     this.bg = new Board( this.tileset, BOARD_SIZE_X, BOARD_SIZE_Y, "bg" );
     this.fg = new Board( this.tileset, BOARD_SIZE_X, BOARD_SIZE_Y, "fg" );
     this.inv = new Inventory( this.tileset, INVENTORY_SIZE );
-    this.dom = {};
     this.stageBgCharMap = null;
     this.stageFgCharMap = null;
-    this.data = new Data();
+    this.data = null;
     this.protoMap = new Map();
     this.ready = false;
-    this.audio = new AudioManager();
+    this.audio = new AudioManager( AUDIO_FILES );
   }
 
   init( callback ) {
     console.log( "game.init();" );
+
     var dom = this.dom;
-    dom.inventoryPanel = document.getElementById( id.inventoryPanel );
-    dom.statPanel = document.getElementById( id.statPanel );
-    dom.boardBackground = document.getElementById( id.boardBackground );
-    dom.boardForeground = document.getElementById( id.boardForeground );
-    dom.gamePanel = document.getElementById( id.gamePanel );
 
     this.inv.init( dom.inventoryPanel );
     this.bg.init( dom.boardBackground );
@@ -41,8 +38,9 @@ class Game {
     //dom.board.style = widthStr;
 
     var that = this;
-    var d = this.data;
-    d.init( function() {
+    var d = new Data( DATA_FILES );
+    this.data = d;
+    d.init( dom.loadingPanelDataProgressBar, function() {
         var dp = d.proto;
         for( var protoName in dp ) {
             that.protoMap.set( dp[protoName].typeId, protoName );
@@ -54,7 +52,7 @@ class Game {
         that.stageBgCharMap = new Map( cm.stageBgCharRaw );
         that.stageFgCharMap = new Map( cm.stageFgCharRaw );
         that.stageNameMap = new Map( d.stageNameMap.raw );
-        var atLast = function() {
+        var andThen = function() {
             that.fg.setContentXY( h.x, h.y, h.typeId );
             var fg = that.fg;
             for( let i = 0, x = 0, y = 0, max = fg.size; i < max; i++, x++ ) {
@@ -67,12 +65,13 @@ class Game {
                     that.tryToMoveHeroTo( x, y );
                 } );
             }
-            that.update( false, function() {
-                callback();
-            } );
+            that.update( false );
+            var lpws = dom.loadingPanelWrapper.style;
+            lpws.opacity = 0.0;
+            // lpws.zIndex = -1000;
         };
-        that.audio.loadUrl( "audio/punch.mp3", function() {
-            that.loadMap( that.stageNameMap.get( h.z ), atLast );
+        that.audio.init( dom.loadingPanelAudioProgressBar, function() {
+            that.loadMap( that.stageNameMap.get( h.z ), andThen );
         } );
     } );
   }
@@ -97,7 +96,7 @@ class Game {
                 this.updateStats();
                 break;
             case 7:
-                this.audio.play( this.audio.buffer );
+                this.audio.playNamed( "punch.mp3" );
                 //alert( "OOMPF!" ); // TODO handle actor events
                 break;
             case undefined:
@@ -135,7 +134,7 @@ class Game {
                            + "<br />XP: " + hero.xp + " LEV: " + hero.level + " $$: " + hero.gold;
   }
 
-  update( quickUpdate, callback ) {
+  update( quickUpdate ) {
     this.updateTitle();
     this.updateStats();
     this.inv.update();
@@ -144,8 +143,6 @@ class Game {
         this.bg.update();
         this.fg.update();
     }
-
-    callback();
     this.ready = true;
   }
 
@@ -154,6 +151,7 @@ class Game {
     var fg = this.fg;
     var bgIdMap = this.stageBgCharMap;
     var fgIdMap = this.stageFgCharMap;
+    var that = this;
 
     readXhr( DATA_PATH + "map" + mapNr + ".txt", true, function( mapStr ) {
         for ( var i = 0, pos = -1, len = mapStr.length; i < len; i++ ) {
@@ -176,6 +174,7 @@ class Game {
             bg.setContent( pos, typeIdBg );
             fg.setContent( pos, typeIdFg );
         }
+        that.audio.playNamed( "bgm0" + mapNr + ".mp3", true );
         callback();
     } );
   }

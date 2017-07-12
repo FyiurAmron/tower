@@ -4,16 +4,42 @@
     <title>Tower</title>
 
     <!-- <link rel="stylesheet" type="text/css" href="css/reset.css" /> -->
-    <link rel="stylesheet" type="text/css" href="css/default.css" />
     <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=MedievalSharp" />
+    <link rel="stylesheet" type="text/css" href="css/default.css" />
     <!-- <link rel="stylesheet" type="text/css" href="css/tower.css" /> -->
     <!-- <link rel="shortcut icon" href="./favicon.ico" type="image/x-icon"> -->
     <link rel="icon" type="image/png" href="img/favicon.png" />
 
-    <script type="text/javascript" src="js/main.js">
-    </script>
+    <script type="text/javascript" src="js/const.js"></script>
+    <script type="text/javascript" src="js/util.js"></script>
+    <script type="text/javascript" src="js/main.js"></script>
   </head>
   <body>
+   <div id="loading-panel-wrapper">
+    <div id="loading-panel">
+     <div id="loading-panel-scripts">
+       <div class="loading-panel-progress-bar">
+       </div>
+       <div class="loading-panel-caption">
+         Scripts
+       </div>
+     </div>
+     <div id="loading-panel-data">
+       <div class="loading-panel-progress-bar">
+       </div>
+       <div class="loading-panel-caption">
+         Data
+       </div>
+     </div>
+     <div id="loading-panel-audio">
+       <div class="loading-panel-progress-bar">
+       </div>
+       <div class="loading-panel-caption">
+         Audio
+       </div>
+     </div>
+    </div>
+   </div>
    <div id="main-panel">
     <h1>Tower Mock v2</h1>
     <div id="stat-panel">

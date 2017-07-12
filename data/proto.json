@@ -8,5 +8,15 @@
 		"xp": 0,
 		"level": 0,
 		"gold": 0
+	},
+	"skeleton": {
+        "typeId": 76,
+		"hp": 50,
+		"att": 15,
+		"def": 5,
+		"spd": 5,
+		"xp": 5,
+		"level": 0,
+		"gold": 10
 	}
 }

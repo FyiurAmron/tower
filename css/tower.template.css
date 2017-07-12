@@ -7,10 +7,6 @@ h1 {
     text-align: center;
 }
 
-#main-panel {
-    display: none;
-}
-
 #stat-panel, #inventory-panel, #game-panel {
     margin: 0 auto;
     /* display: block; */
@@ -53,6 +49,7 @@ h1 {
 
 .tile-type-undefined {
     opacity: 0;
+    transition: none;
 }
 
 .tile-type-12 > div {

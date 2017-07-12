@@ -1,10 +1,97 @@
 
 /* @import url('https://fonts.googleapis.com/css?family=MedievalSharp'); */
 
-#main-panel {
-    display: none;
+html {
+    height: 100%;
+
+    font-family: "MedievalSharp", "Segoe Script", "URW Chancery L", "Apple Chancery", serif;
+    /* note: cursive fallback would usually mean Comic Sans on Win & Mac platforms */
 }
 
-html {
-    font-family: 'MedievalSharp', cursive;
+body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    position: absolute;
+    top: 0;
 }
+
+#main-panel {
+    /* visibility: hidden; */
+}
+
+#loading-panel-wrapper {
+    display: flex;
+    align-items: center;
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    z-index: 1000;
+    background: #fff;
+    
+    transition: opacity 1s;
+
+    pointer-events: none;
+}
+
+#loading-panel {
+    transition: opacity 0.2s;
+    text-align: center;
+    margin: 0 auto;
+    width: 100%;
+
+    font-size: 200%;
+}
+
+#loading-panel > div {
+    position: relative;
+    margin-top: 10%;
+    width: 30%;
+    margin: 5% auto;
+    border: 2px rgba( 0, 0, 0, 0.5 ) solid;
+
+    opacity: 0.0;
+    transition: opacity 1s;
+}
+
+.loading-panel-progress-bar {
+    position: absolute;
+    height: 100%;
+    z-index: -1;
+    transition: width 0.2s;
+}
+
+#loading-panel-scripts > .loading-panel-progress-bar {
+    background: #8df;
+}
+
+#loading-panel-data > .loading-panel-progress-bar {
+    background: #0f0;
+}
+
+#loading-panel-audio > .loading-panel-progress-bar {
+    background: #ff0;
+}
+
+.loading-panel-caption {
+    padding: 14px;
+}
+
+/*
+#loading-panel-script {
+    position: absolute;
+    top: 25%;
+}
+
+#loading-panel-data {
+    position: absolute;
+    top: 25%;
+}
+
+#loading-panel-audio {
+    position: absolute;
+    top: 25%;
+}
+*/
+
