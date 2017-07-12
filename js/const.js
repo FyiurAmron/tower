@@ -46,6 +46,7 @@ const TILE_TYPE_CLASS_PREFIX = TILE_CLASS + "-type-";
 const ID = {
     loadingPanel: "loading-panel",
     loadingPanelWrapper: "loading-panel-wrapper",
+    configButton: "config-button",
     mainPanel: "main-panel",
     gamePanel: "game-panel",
     statPanel: "stat-panel",

@@ -1,11 +1,5 @@
+
 /* tower.css */
-
-html, body {
-}
-
-h1 {
-    text-align: center;
-}
 
 #stat-panel, #inventory-panel, #game-panel {
     margin: 0 auto;
@@ -143,5 +137,15 @@ h1 {
     75%  { transform: rotate( 10deg ); }
     85%  { transform: rotate( -5deg ); }
     90%  { transform: rotate( 5deg ); }
+    100% { transform: rotate( 0 ); }
+}
+
+@keyframes rotateRight {
+    0%   { transform: rotate( 0 ); }
+    100% { transform: rotate( 360deg ); }
+}
+
+@keyframes rotateLeft {
+    0%   { transform: rotate( 360deg ); }
     100% { transform: rotate( 0 ); }
 }

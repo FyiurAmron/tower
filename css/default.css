@@ -1,10 +1,12 @@
 
+/* default.css */
+
 /* @import url('https://fonts.googleapis.com/css?family=MedievalSharp'); */
 
 html {
     height: 100%;
 
-    font-family: "MedievalSharp", "Segoe Script", "URW Chancery L", "Apple Chancery", serif;
+    font-family: "MedievalSharp", "Monotype Corsiva", "URW Chancery L", "Apple Chancery", serif;
     /* note: cursive fallback would usually mean Comic Sans on Win & Mac platforms */
 }
 
@@ -17,8 +19,26 @@ body {
     top: 0;
 }
 
-#main-panel {
-    /* visibility: hidden; */
+#title-panel {
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#title-caption {
+    padding: 14px;
+    font-size: 2em;
+}
+
+#config-button {
+    /* height: 100%; */
+    background: url( "../img/gears.png" );
+    background-size: contain;
+    height: 32px;
+    width: 32px;
+
+    margin-left: 64px;
 }
 
 #loading-panel-wrapper {
@@ -77,21 +97,3 @@ body {
 .loading-panel-caption {
     padding: 14px;
 }
-
-/*
-#loading-panel-script {
-    position: absolute;
-    top: 25%;
-}
-
-#loading-panel-data {
-    position: absolute;
-    top: 25%;
-}
-
-#loading-panel-audio {
-    position: absolute;
-    top: 25%;
-}
-*/
-

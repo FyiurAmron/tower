@@ -22,13 +22,14 @@ class AudioManager {
     this.activeLoopSources = new Set();
     this.activeLoopNames = new Map();
 
-    this.sfxGain = this.context.createGain();
     this.bgmGain = this.context.createGain();
+    this.sfxGain = this.context.createGain();
 
-    this.sfxGain.connect( this.context.destination );
+    this.bgmGain.gain.currentMaxValue = 1.0;
+    this.sfxGain.gain.currentMaxValue = 1.0;
+
     this.bgmGain.connect( this.context.destination );
-
-    // TODO store base gain values (vs fades)
+    this.sfxGain.connect( this.context.destination );
   }
 
   init( progressBarDom, callback ) {
@@ -60,6 +61,60 @@ class AudioManager {
             }
         } );
     }, "arraybuffer" );
+  }
+
+  defaultFadeEndTime() {
+    return this.context.currentTime + DEFAULT_FADE_TIME;
+  }
+
+  toggleMute( fade ) {
+    var bgmTarget, sfxTarget;
+    var sgg = this.sfxGain.gain;
+    var bgg = this.bgmGain.gain;
+    var muteState;
+    if ( bgg.value !== 0 && sgg.value !== 0 ) { // mute
+        bgmTarget = 0;
+        sfxTarget = 0;
+        muteState = true;
+    } else {
+        bgmTarget = bgg.currentMaxValue;
+        sfxTarget = sgg.currentMaxValue;
+        muteState = false;
+    }
+    if ( fade ) {
+        bgg.linearRampToValueAtTime( bgmTarget, this.defaultFadeEndTime() );
+        sgg.linearRampToValueAtTime( sfxTarget, this.defaultFadeEndTime() );
+    } else {
+        bgg.value = bgmTarget;
+        sgg.value = sfxTarget;
+    }
+    return muteState;
+  }
+
+  setMaxGains( bgmMaxValue, sfxMaxValue, fade ) {
+    var sgg = this.sfxGain.gain;
+    var bgg = this.bgmGain.gain;
+    sgg.currentMaxValue = sfxMaxValue;
+    bgg.currentMaxValue  = bgmMaxValue;
+    if ( fade ) {
+        if ( sgg.value !== 0 ) {
+            sgg.linearRampToValueAtTime( sfxMaxValue, this.defaultFadeEndTime() );
+        }
+        if ( bgg.value !== 0 ) {
+            bgg.linearRampToValueAtTime( bgmMaxValue, this.defaultFadeEndTime() );
+        }
+    } else {
+        sgg.value = sfxMaxValue;
+        bgg.value = bgmMaxValue;
+    }
+  }
+
+  fadeInBgm() {
+    this.bgmGain.gain.linearRampToValueAtTime( this.bgmGain.gain.currentMaxValue, this.defaultFadeEndTime() );
+  }
+
+  fadeOutBgm() {
+    this.bgmGain.gain.linearRampToValueAtTime( 0.0, this.defaultFadeEndTime() );
   }
 
   // TODO streaming music
@@ -98,10 +153,6 @@ class AudioManager {
   stopLoop( name ) {
   }
 */
-  fadeOutBgm() {
-    this.bgmGain.gain.linearRampToValueAtTime( 0.0, this.context.currentTime + DEFAULT_FADE_TIME );
-  }
-
   stopAllLoops() {
     for( var loop of this.activeLoopSources ) {
         loop.stop();

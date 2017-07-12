@@ -82,6 +82,7 @@ class Dom {
   constructor( doc ) {
     this.doc = doc;
     this.head = doc.getElementsByTagName( HEAD_TAG )[0];
+
     this.inventoryPanel = doc.getElementById( ID.inventoryPanel );
     this.statPanel = doc.getElementById( ID.statPanel );
     this.boardBackground = doc.getElementById( ID.boardBackground );
@@ -90,6 +91,7 @@ class Dom {
     this.mainPanel = doc.getElementById( ID.mainPanel );
     this.loadingPanel = doc.getElementById( ID.loadingPanel );
     this.loadingPanelWrapper = doc.getElementById( ID.loadingPanelWrapper );
+    this.configButton = doc.getElementById( ID.configButton );
 
     this.loadingPanelScriptProgressBar = doc.querySelector( QUERY_STR.loadingPanelScriptsProgressBar );
     this.loadingPanelDataProgressBar   = doc.querySelector( QUERY_STR.loadingPanelDataProgressBar );

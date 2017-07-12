@@ -24,9 +24,24 @@ class Game {
   init( callback ) {
     console.log( "game.init();" );
 
-    this.audio.bgmGain.gain.value = 0.2;
-
     var dom = this.dom;
+    var that = this;
+    var audio = this.audio;
+
+    audio.setMaxGains( 0.2, 1.0 );
+
+    var cb = dom.configButton;
+    cb.addEventListener( "mousedown" /* "click" */, function() {
+        if ( cb.style.animation !== "" ) {
+            return;
+        }
+
+        var muteState = audio.toggleMute( true );
+        cb.style.animation = ( muteState ? "rotateLeft " : "rotateRight " ) + DEFAULT_FADE_TIME + "s linear";
+        cb.addEventListener("animationend", function() {
+            cb.style.animation = "";
+        } );
+    } );
 
     this.inv.init( dom.inventoryPanel );
     this.bg.init( dom.boardBackground );
@@ -39,7 +54,6 @@ class Game {
     //dom.boardBackground.style = widthStr;
     //dom.board.style = widthStr;
 
-    var that = this;
     var d = new Data( DATA_FILES );
     this.data = d;
     d.init( dom.loadingPanelDataProgressBar, function() {
@@ -86,7 +100,7 @@ class Game {
         // TODO properly handle actor events
         switch ( con ) {
             case 76:
-                this.audio.fadeOutBgm();
+                //this.audio.fadeOutBgm();
                 var t = this.data.proto[this.protoMap.get( con )];
                 var dam;
                 dam = h.att - t.def;
