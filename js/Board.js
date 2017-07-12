@@ -4,11 +4,11 @@
 /* jslint node: true */
 
 class Board {
-  constructor( tileset, x, y, nameId ) {
+  constructor( tileset, sizeX, sizeY, nameId ) {
     this.tileset = tileset;
-    this.x = x;
-    this.y = y;
-    this.size = x * y;
+    this.sizeX = sizeX;
+    this.sizeY = sizeY;
+    this.size = sizeX * sizeY;
     this.dom = null;
     this.tiles = null;
     this.content = new Array( this.size );
@@ -18,12 +18,24 @@ class Board {
 
   init( dom ) {
     this.dom = dom;
-    this.tiles = this.tileset.createMatrix( dom, BOARD_SIZE_TOTAL, BOARD_SIZE_X, BOARD_ROW_CLASS, this.rowIdPrefix );
+    this.tiles = this.tileset.createMatrix( dom, this.size, this.sizeX, BOARD_ROW_CLASS, this.rowIdPrefix );
+  }
+
+  setContentXY( x, y, typeId ) {
+    this.setContent( x + y * this.sizeX, typeId );
   }
 
   setContent( elemIdx, typeId ) {
     this.content[elemIdx] = typeId;
     this.updateCell( elemIdx );
+  }
+
+  getContentXY( x, y ) {
+    return this.getContent( x + y * this.sizeX );
+  }
+
+  getContent( elemIdx ) {
+    return this.content[elemIdx];
   }
 
   updateCell( elemIdx ) {

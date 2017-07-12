@@ -19,7 +19,7 @@ class Data {
     var ls = this.loadSet;
     var that = this;
     for( let i = 0; i < cnt; i++ ) {
-        readFile( DATA_PATH + DATA_FILES[i] + DATA_EXTENSION, true, function( dataStr ) {
+        readXhr( DATA_PATH + DATA_FILES[i] + DATA_EXTENSION, true, function( dataStr ) {
             that[DATA_FILES[i]] = JSON.parse( dataStr );
             ls.delete( DATA_FILES[i] );
             if ( ls.size === 0 ) {

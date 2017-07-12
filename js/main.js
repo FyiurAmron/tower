@@ -1,12 +1,14 @@
 "use strict";
 
+/* jslint node: true */
+
 // scriptLoader
 
 const SCRIPT_PATH = "js/";
 const IMPORT_SCRIPTS = [
-  "const.js", "util.js", "data.js",
-  "tileset.js", "inventory.js", "board.js", "hero.js",
-  "game.js"
+  "const.js", "util.js", "Data.js", "AudioManager.js",
+  "Tileset.js", "Inventory.js", "Board.js", "Hero.js",
+  "Game.js"
 ];
 
 const HEAD_TAG = "head";
@@ -47,7 +49,7 @@ function scriptLoader( srcs, callback ) {
 //document.addEventListener('DOMContentLoaded', game.init );
 window.onload = function() {
     scriptLoader( IMPORT_SCRIPTS, function() {
-      readFile( "css/tower.template.css", true, function( cssStr ) {
+      readXhr( "css/tower.template.css", true, function( cssStr ) {
         var css = document.createElement( "style" );
         css.innerHTML = cssStr
           .replace( /%%tileSizeX%%/g, TILE_SIZE_X )

@@ -1,6 +1,5 @@
 "use strict";
 
-/* jslint bitwise: true */
 /* jslint node: true */
 
 class Inventory {

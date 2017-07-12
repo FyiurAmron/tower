@@ -15,7 +15,9 @@ class Game {
     this.stageBgCharMap = null;
     this.stageFgCharMap = null;
     this.data = new Data();
+    this.protoMap = new Map();
     this.ready = false;
+    this.audio = new AudioManager();
   }
 
   init( callback ) {
@@ -41,6 +43,10 @@ class Game {
     var that = this;
     var d = this.data;
     d.init( function() {
+        var dp = d.proto;
+        for( var protoName in dp ) {
+            that.protoMap.set( dp[protoName].typeId, protoName );
+        }
         that.hero = new Hero( d.proto.hero );
         var h = that.hero;
 
@@ -48,39 +54,76 @@ class Game {
         that.stageBgCharMap = new Map( cm.stageBgCharRaw );
         that.stageFgCharMap = new Map( cm.stageFgCharRaw );
         that.stageNameMap = new Map( d.stageNameMap.raw );
-        that.loadMap( that.stageNameMap.get( h.z ), function() {
-            that.setFgXY( h.x, h.y, h.typeId );
+        var atLast = function() {
+            that.fg.setContentXY( h.x, h.y, h.typeId );
             var fg = that.fg;
             for( let i = 0, x = 0, y = 0, max = fg.size; i < max; i++, x++ ) {
-                if ( x === fg.x ) {
+                if ( x === fg.sizeX ) {
                     x = 0;
                     y++;
                 }
-                fg.tiles[i].addEventListener( "click", function() {
+                fg.tiles[i].addEventListener( "mousedown" /* "click" */, function() {
                     //alert( "i: " + i + " X: " + x + " Y: " + y );
-                    if ( fg.content[i] === undefined ) {
-                          that.setFgXY( h.x, h.y, undefined );
-                          that.setFgXY( x, y, h.typeId );
-                          h.x = x;
-                          h.y = y;
-                    }
+                    that.tryToMoveHeroTo( x, y );
                 } );
             }
             that.update( false, function() {
                 callback();
             } );
+        };
+        that.audio.loadUrl( "audio/punch.mp3", function() {
+            that.loadMap( that.stageNameMap.get( h.z ), atLast );
         } );
     } );
   }
 
+  tryToMoveHeroTo( x, y ) {
+    var h = this.hero;
+    var con = this.fg.getContentXY( x, y );
+    if ( isAdjacent( x, y, h.x, h.y ) ) {
+        // alert( "actor event @ [" + x + "," + y + "]" ); // TODO handle actor events
+        switch ( con ) {
+            case 76:
+                var t = this.data.proto[this.protoMap.get( con )];
+                var dam;
+                dam = h.att - t.def;
+                if ( dam > 0 ) {
+                    t.hp -= dam;
+                }
+                dam = t.att - h.def;
+                if ( dam > 0 ) {
+                    h.hp -= dam;
+                }
+                this.updateStats();
+                break;
+            case 7:
+                this.audio.play( this.audio.buffer );
+                //alert( "OOMPF!" ); // TODO handle actor events
+                break;
+            case undefined:
+                this.fg.setContentXY( h.x, h.y, undefined );
+                this.fg.setContentXY( x, y, h.typeId );
+                h.x = x;
+                h.y = y;
+                break;
+        }
+    } else if ( con === undefined ) {
+        // TODO pathfinding
+        this.fg.setContentXY( h.x, h.y, undefined );
+        this.fg.setContentXY( x, y, h.typeId );
+        h.x = x;
+        h.y = y;
+    }
+  }
+/*
   setBgXY( x, y, typeId ) {
-    this.bg.setContent( x + y * BOARD_SIZE_X, typeId );
+    this.bg.setContentXY( x, y, typeId );
   }
 
   setFgXY( x, y, typeId ) {
-    this.fg.setContent( x + y * BOARD_SIZE_X, typeId );
+    this.fg.setContentXY( x, y, typeId );
   }
-
+*/
   updateTitle() {
     var hero = this.hero;
     document.title = "X: " + hero.x + "\u2007 Y: " + hero.y + "\u2007 Z: " + hero.z;
@@ -112,7 +155,7 @@ class Game {
     var bgIdMap = this.stageBgCharMap;
     var fgIdMap = this.stageFgCharMap;
 
-    readFile( DATA_PATH + "map" + mapNr + ".txt", true, function( mapStr ) {
+    readXhr( DATA_PATH + "map" + mapNr + ".txt", true, function( mapStr ) {
         for ( var i = 0, pos = -1, len = mapStr.length; i < len; i++ ) {
             var c = mapStr.charAt( i );
             if ( c === "\n" || c === "\r" ) {
