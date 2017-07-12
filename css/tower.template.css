@@ -6,7 +6,8 @@
     /* display: block; */
 }
 
-#stat-panel, #inventory-panel {
+#stat-panel {
+    padding-left: 32px;
 }
 
 #board-background, #board-foreground {

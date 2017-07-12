@@ -62,6 +62,7 @@ body {
     width: 100%;
 
     font-size: 200%;
+    color: #fff;
 }
 
 #loading-panel > div {
@@ -83,15 +84,18 @@ body {
 }
 
 #loading-panel-scripts > .loading-panel-progress-bar {
-    background: #8df;
+    /* background: #8df; */
+    background: url( "../img/brickBrown.png" );
 }
 
 #loading-panel-data > .loading-panel-progress-bar {
-    background: #0f0;
+    /* background: #0f0; */
+    background: url( "../img/brickBlack.png" );
 }
 
 #loading-panel-audio > .loading-panel-progress-bar {
-    background: #ff0;
+    /* background: #ff0; */
+    background: url( "../img/lava.png" );
 }
 
 .loading-panel-caption {
