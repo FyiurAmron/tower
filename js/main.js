@@ -2,6 +2,8 @@
 
 /* jslint node: true */
 
+var game = null;
+
 //document.addEventListener('DOMContentLoaded', game.init );
 window.onload = function() {
   document.fonts.ready.then( function() {
@@ -19,7 +21,7 @@ window.onload = function() {
           .replace( /%%tileSizeY%%/g, TILE_SIZE_Y );
         document.head.appendChild( css );
 
-        var game = new Game( dom );
+        game = new Game( dom );
 
 // init debug here
         game.inv.content[2] = 55;
@@ -27,6 +29,10 @@ window.onload = function() {
 // end of init debug
 
         game.init();
+
+        console.log( "game.init() completed." );
+
+//findManhattanPath( game.fg.content, 16, 22, 0, 4 );
       } );
     } );
   } );

@@ -78,6 +78,73 @@ function scriptLoader( srcs, head, progressBarDom, callback ) {
     script.onload = callback;
 }
 
+function findManhattanPathXY( array, sizeX, sizeY, sourceX, sourceY, targetX, targetY ) {
+    return findManhattanPath( array, sizeX, sizeY, sourceX + sourceY * sizeX, targetX + targetY * sizeX );
+}
+
+function findManhattanPath( array, sizeX, sizeY, sourcePos, targetPos ) {
+    // note: undefined in input array => path possible; any other value blocks
+
+    var lastRow = ( sizeY - 1 ) * sizeX;
+    var lastCol = sizeX - 1;
+
+    var frontier = new Set( [ sourcePos ] );
+    var cameFrom = array.map( function(x) {
+        return ( x === undefined ) ? undefined : -1;
+    } );
+
+    var ret;
+    var processDest = function( pos, dest ) {
+        if ( cameFrom[dest] !== undefined ) {
+            return false;
+        }
+        cameFrom[dest] = pos;
+        if ( dest !== targetPos ) {
+            frontier.add( dest );
+            return false;
+        }
+        var path = [];
+        for ( var pos = targetPos; pos !== sourcePos; pos = cameFrom[pos] ) {
+            path.push( pos );
+        }
+        path.push( sourcePos );
+        ret = path.reverse();
+        return true;
+    };
+    
+    while ( frontier.size !== 0 ) {
+        var oldFrontier = new Set( frontier );
+        for ( var pos of oldFrontier ) {
+            if ( pos >= sizeX ) { // not 1st row; can go up
+                if ( processDest( pos, pos - sizeX ) ) {
+                    return ret;
+                }
+            }
+            if ( pos < lastRow ) { // not last row; can go down
+                if ( processDest( pos, pos + sizeX ) ) {
+                    return ret;
+                }
+            }
+            var x = pos % sizeX;
+            if ( x !== 0 ) { // not 1st col; can go left
+                if ( processDest( pos, pos - 1 ) ) {
+                    return ret;
+                }
+            }
+            if ( x !== lastCol ) { // not last col; can go right
+                if ( processDest( pos, pos + 1 ) ) {
+                    return ret;
+                }
+            }
+
+            frontier.delete( pos );
+        }
+    }
+
+    //return cameFrom;
+    return null; // no path found
+}
+
 class Dom {
   constructor( doc ) {
     this.doc = doc;

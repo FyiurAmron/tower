@@ -32,6 +32,9 @@ class Game {
 
     var cb = dom.configButton;
     cb.addEventListener( "mousedown" /* "click" */, function() {
+        if ( evt.button !== 0 ) {
+            return;
+        }
         if ( cb.style.animation !== "" ) {
             return;
         }
@@ -76,8 +79,11 @@ class Game {
                     x = 0;
                     y++;
                 }
-                fg.tiles[i].addEventListener( "mousedown" /* "click" */, function() {
+                fg.tiles[i].addEventListener( "mousedown" /* "click" */, function(evt) {
                     //alert( "i: " + i + " X: " + x + " Y: " + y );
+                    if ( evt.button !== 0 ) {
+                        return;
+                    }
                     that.tryToMoveHeroTo( x, y );
                 } );
             }
@@ -124,11 +130,28 @@ class Game {
                 break;
         }
     } else if ( con === undefined ) {
-        // TODO pathfinding
+        var fg = this.fg;
+        var path = findManhattanPathXY( fg.content, fg.sizeX, fg.sizeY, h.x, h.y, x, y );
+        //console.log( path );
+
+        // TEMP show path visually
+        var tiles = this.bg.tiles;
+        for( var tile of tiles ) {
+            tile.style.transform = "scale( 1.0 )";
+        }
+        if ( path !== null ) {
+            for( var tileIdx of path ) {
+                tiles[tileIdx].style.transform = "scale( 0.7 )";
+            }
+        }
+
+        // TODO proper path steering
+/*
         this.fg.setContentXY( h.x, h.y, undefined );
         this.fg.setContentXY( x, y, h.typeId );
         h.x = x;
         h.y = y;
+*/
     }
   }
 
