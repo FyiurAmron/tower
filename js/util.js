@@ -3,8 +3,20 @@
 /* jslint node: true */
 
 //
-// util functions
+// top-level util functions
 //
+
+var logToConsole = true;
+var logToAlert = false;
+
+function logError( str ) {
+    if ( logToConsole ) {
+        console.log( str );
+    }
+    if ( logToAlert ) {
+        alert( str );
+    }
+}
 
 function readXhr( url, async, callback, responseType ) {
     if ( async === undefined ) {
@@ -24,16 +36,12 @@ function readXhr( url, async, callback, responseType ) {
                 callback( req.response );
             }
         } else {
-            alert( "'" + url + "' could not be loaded from server!" );
-            alert( "req.readyState === " + req.readyState + " req.status === " + req.status );
+            logError( "'" + url + "' could not be loaded from server!" );
+            logError( "req.readyState === " + req.readyState + " req.status === " + req.status );
         }
     };
     req.send();
     return req.response;
-}
-
-function isAdjacent( x, y, x2, y2 ) { // corners excluded; (+1,0),(-1,0),(0,+1),(0,-1)
-    return Math.abs( x - x2 ) + Math.abs( y - y2 ) === 1;
 }
 
 function updateProgressBar( progressBarDom, ratio ) {
@@ -42,8 +50,26 @@ function updateProgressBar( progressBarDom, ratio ) {
     }
 }
 
+function reflow( domElem ) {
+    if ( domElem === undefined ) {
+        domElem = document.documentElement;
+    }
+    void( domElem.offsetHeight );
+}
+
+function endAnimation( evt ) {
+    evt.target.style.animation = "";
+}
+
+function animateOneShot( domElem, animStr, force ) {
+    if ( force || domElem.style.animation !== animStr ) {
+        domElem.style.animation = animStr;
+    }
+    domElem.addEventListener( "animationend", endAnimation );
+}
+
 function scriptLoader( srcs, head, progressBarDom, callback ) {
-    var script;
+    var script, cb;
     var cnt = srcs.length;
     var scripts = new Array( cnt );
 
@@ -57,10 +83,10 @@ function scriptLoader( srcs, head, progressBarDom, callback ) {
     head.appendChild( scripts[0] );
 
     for( let i = 1; i < cnt; i++ ) {
-        var cb = function() {
+        cb = function() {
             head.appendChild( scripts[i] );
             updateProgressBar( progressBarDom, i / cnt );
-        }
+        };
         script = scripts[i - 1];
         script.onreadystatechange = cb;
         script.onload = cb;
@@ -78,71 +104,26 @@ function scriptLoader( srcs, head, progressBarDom, callback ) {
     script.onload = callback;
 }
 
-function findManhattanPathXY( array, sizeX, sizeY, sourceX, sourceY, targetX, targetY ) {
-    return findManhattanPath( array, sizeX, sizeY, sourceX + sourceY * sizeX, targetX + targetY * sizeX );
-}
-
-function findManhattanPath( array, sizeX, sizeY, sourcePos, targetPos ) {
-    // note: undefined in input array => path possible; any other value blocks
-
-    var lastRow = ( sizeY - 1 ) * sizeX;
-    var lastCol = sizeX - 1;
-
-    var frontier = new Set( [ sourcePos ] );
-    var cameFrom = array.map( function(x) {
-        return ( x === undefined ) ? undefined : -1;
-    } );
-
-    var ret;
-    var processDest = function( pos, dest ) {
-        if ( cameFrom[dest] !== undefined ) {
-            return false;
-        }
-        cameFrom[dest] = pos;
-        if ( dest !== targetPos ) {
-            frontier.add( dest );
-            return false;
-        }
-        var path = [];
-        for ( var pos = targetPos; pos !== sourcePos; pos = cameFrom[pos] ) {
-            path.push( pos );
-        }
-        path.push( sourcePos );
-        ret = path.reverse();
-        return true;
-    };
-    
-    while ( frontier.size !== 0 ) {
-        var oldFrontier = new Set( frontier );
-        for ( var pos of oldFrontier ) {
-            if ( pos >= sizeX ) { // not 1st row; can go up
-                if ( processDest( pos, pos - sizeX ) ) {
-                    return ret;
-                }
-            }
-            if ( pos < lastRow ) { // not last row; can go down
-                if ( processDest( pos, pos + sizeX ) ) {
-                    return ret;
-                }
-            }
-            var x = pos % sizeX;
-            if ( x !== 0 ) { // not 1st col; can go left
-                if ( processDest( pos, pos - 1 ) ) {
-                    return ret;
-                }
-            }
-            if ( x !== lastCol ) { // not last col; can go right
-                if ( processDest( pos, pos + 1 ) ) {
-                    return ret;
-                }
-            }
-
-            frontier.delete( pos );
-        }
+class Fifo {
+    constructor( srcArr ) {
+        this.data = ( srcArr !== undefined ) ? srcArr.slice() : [];
+        this.idx = 0;
     }
 
-    //return cameFrom;
-    return null; // no path found
+    push( value ) {
+        this.data.push( value );
+    }
+
+    pop() {
+        // return this.data[this.idx++];
+        var ret = this.data[this.idx];
+        this.idx++;
+        return ret;
+    }
+
+    size() {
+        return this.data.length - this.idx;
+    }
 }
 
 class Dom {
@@ -150,18 +131,12 @@ class Dom {
     this.doc = doc;
     this.head = doc.getElementsByTagName( HEAD_TAG )[0];
 
-    this.inventoryPanel = doc.getElementById( ID.inventoryPanel );
-    this.statPanel = doc.getElementById( ID.statPanel );
-    this.boardBackground = doc.getElementById( ID.boardBackground );
-    this.boardForeground = doc.getElementById( ID.boardForeground );
-    this.gamePanel = doc.getElementById( ID.gamePanel );
-    this.mainPanel = doc.getElementById( ID.mainPanel );
-    this.loadingPanel = doc.getElementById( ID.loadingPanel );
-    this.loadingPanelWrapper = doc.getElementById( ID.loadingPanelWrapper );
-    this.configButton = doc.getElementById( ID.configButton );
+    for( var id in ID ) {
+        this[id] = doc.getElementById( ID[id] );
+    }
 
-    this.loadingPanelScriptProgressBar = doc.querySelector( QUERY_STR.loadingPanelScriptsProgressBar );
-    this.loadingPanelDataProgressBar   = doc.querySelector( QUERY_STR.loadingPanelDataProgressBar );
-    this.loadingPanelAudioProgressBar  = doc.querySelector( QUERY_STR.loadingPanelAudioProgressBar );
+    for( var sel in QUERY_STR ) {
+        this[sel] = doc.querySelector( QUERY_STR[sel] );
+    }
   }
 }

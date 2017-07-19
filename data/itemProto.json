@@ -1,0 +1,22 @@
+{
+	"minorPotion": {
+        "typeId": 31,
+		"hp": 100,
+		"att": 0,
+		"def": 0,
+		"spd": 0,
+		"xp": 0,
+		"level": 0,
+		"gold": 10
+	},
+	"majorPotion": {
+        "typeId": 32,
+		"hp": 200,
+		"att": 0,
+		"def": 0,
+		"spd": 0,
+		"xp": 0,
+		"level": 0,
+		"gold": 20
+	}
+}

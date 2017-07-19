@@ -5,7 +5,8 @@
 const DATA_PATH = "data/";
 const DATA_EXTENSION = ".json";
 const DATA_FILES = [
-  "charMap", "proto", "stageNameMap",
+  "charMap", "stageNameMap",
+  "creatureProto", "itemProto",
 ];
 
 class Data {

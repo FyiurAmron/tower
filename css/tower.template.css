@@ -1,22 +1,44 @@
 
 /* tower.css */
 
-#stat-panel, #inventory-panel, #game-panel {
+#top-panel, /* #stat-panel, */ #inventory-panel, #game-panel {
     margin: 0 auto;
-    /* display: block; */
 }
 
 #stat-panel {
-    padding-left: 32px;
+    padding-left: %%tileSizeX%%px;
 }
 
-#board-background, #board-foreground {
+#board-background, #board-foreground, #board-overlay {
     position: absolute;
     line-height: 0;
 }
 
+#board-overlay {
+    pointer-events: none;
+}
+
 #game-panel, #inventory-panel {
     position: relative;
+}
+
+#config-button {
+    background: url( "../img/gears.png" );
+    background-size: contain;
+    height: 32px;
+    width: 32px;
+
+    margin-right: calc( %%tileSizeX%%px / 2 );
+
+    float: right;
+}
+
+#stat-panel, #config-button {
+    display: inline-block;
+}
+
+#top-panel {
+    padding-top: calc( %%tileSizeY%%px / 2 );
 }
 
 #inventory-panel {
@@ -122,6 +144,41 @@
 @keyframes slideRightAnim {
     0%   { transform: translateX( 0 ); }
     100% { transform: translateX( %%tileSizeX%%px ); }
+}
+
+@keyframes slideLeftAnim {
+    0%   { transform: translateX( 0 ); }
+    100% { transform: translateX( -%%tileSizeX%%px ); }
+}
+
+@keyframes slideDownAnim {
+    0%   { transform: translateY( 0 ); }
+    100% { transform: translateY( %%tileSizeY%%px ); }
+}
+
+@keyframes slideUpAnim {
+    0%   { transform: translateY( 0 ); }
+    100% { transform: translateY( -%%tileSizeY%%px ); }
+}
+
+@keyframes halfSlideRightAnim {
+    0%   { transform: translateX( 0 ); }
+    100% { transform: translateX( calc( %%tileSizeX%%px / 2 ) ); }
+}
+
+@keyframes halfSlideLeftAnim {
+    0%   { transform: translateX( 0 ); }
+    100% { transform: translateX( calc( -%%tileSizeX%%px / 2 ) ); }
+}
+
+@keyframes halfSlideDownAnim {
+    0%   { transform: translateY( 0 ); }
+    100% { transform: translateY( calc( %%tileSizeY%%px / 2 ) ); }
+}
+
+@keyframes halfSlideUpAnim {
+    0%   { transform: translateY( 0 ); }
+    100% { transform: translateY( calc( -%%tileSizeY%%px / 2 ) ); }
 }
 
 @keyframes fadeAnim {

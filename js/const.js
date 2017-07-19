@@ -3,12 +3,12 @@
 /* jslint node: true */
 
 //
-// constants
+// top-level constants
 //
 
 const APP_SCRIPT_PATH = "js/app/";
 const IMPORT_SCRIPTS = [
-  /* "const.js", "util.js", */ "Data.js", "AudioManager.js",
+  "const.js", "util.js", "Data.js", "AudioManager.js",
   "Tileset.js", "Inventory.js", "Board.js", "Hero.js",
   "Game.js"
 ];
@@ -16,20 +16,6 @@ const IMPORT_SCRIPTS = [
 const HEAD_TAG = "head";
 const SCRIPT_TAG = "script";
 const SCRIPT_TYPE = "text/javascript";
-
-//
-
-const TILE_SIZE_X = 32;
-const TILE_SIZE_Y = 32;
-const TILESET_COLUMNS = 11;
-
-const DEFAULT_BACKGROUND_TYPE = 5;
-
-const BOARD_SIZE_X = 16;
-const BOARD_SIZE_Y = 22;
-const BOARD_SIZE_TOTAL = BOARD_SIZE_X * BOARD_SIZE_Y;
-
-const INVENTORY_SIZE = BOARD_SIZE_X;
 
 // DOM-related
 
@@ -47,12 +33,14 @@ const ID = {
     loadingPanel: "loading-panel",
     loadingPanelWrapper: "loading-panel-wrapper",
     configButton: "config-button",
+    topPanel: "top-panel",
     mainPanel: "main-panel",
     gamePanel: "game-panel",
     statPanel: "stat-panel",
     inventoryPanel: "inventory-panel",
     boardBackground: "board-background",
     boardForeground: "board-foreground",
+    boardOverlay: "board-overlay",
 };
 
 const LOADING_PANEL_PROGRESS_BAR_CLASS = "loading-panel-progress-bar";
@@ -61,4 +49,4 @@ const QUERY_STR = {
     loadingPanelScriptsProgressBar: "#" + ID.loadingPanel + "-scripts > ." + LOADING_PANEL_PROGRESS_BAR_CLASS,
     loadingPanelDataProgressBar:    "#" + ID.loadingPanel + "-data    > ." + LOADING_PANEL_PROGRESS_BAR_CLASS,
     loadingPanelAudioProgressBar:   "#" + ID.loadingPanel + "-audio   > ." + LOADING_PANEL_PROGRESS_BAR_CLASS,
-}
+};

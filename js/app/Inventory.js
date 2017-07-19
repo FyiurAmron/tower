@@ -15,9 +15,17 @@ class Inventory {
     this.tiles = this.tileset.createMatrix( dom, this.size, BOARD_SIZE_X, INVENTORY_ROW_CLASS, INVENTORY_ROW_PREFIX );
   }
 
+  getContent( elemIdx ) {
+    return this.content[elemIdx];
+  }
+
+  getTile( elemIdx ) {
+    return this.tiles[elemIdx];
+  }
+
   setContent( elemIdx, typeId ) {
     this.content[elemIdx] = typeId;
-    updateTile( elemIdx );
+    this.updateTile( elemIdx );
   }
 
   updateTile( elemIdx ) {

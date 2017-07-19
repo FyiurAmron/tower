@@ -1,0 +1,9 @@
+{
+    "esversion": 6,
+    "loopfunc": true,
+    "laxbreak": true,
+
+    "undef": true,
+    "devel": true,
+    "browser": true
+}

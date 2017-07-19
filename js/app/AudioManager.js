@@ -16,7 +16,8 @@ class AudioManager {
     this.loadSize = loadArray.length;
     this.loadSet = new Set( loadArray );
 
-    this.context = new ( window.AudioContext || window.webkitAudioContext )();
+    var AudioContext = window.AudioContext || window.webkitAudioContext;
+    this.context = new AudioContext();
     this.lastBuffer = null;
     this.bufferMap = new Map();
     this.activeLoopSources = new Set();
