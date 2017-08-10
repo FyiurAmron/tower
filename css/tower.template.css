@@ -23,7 +23,7 @@
 }
 
 #config-button {
-    background: url( "../img/gears.png" );
+    background: url( "img/gears-white.png" );
     background-size: contain;
     height: 32px;
     width: 32px;
@@ -61,7 +61,7 @@
 
 .tile > div {
     height: 100%;
-    background-image: url( "../img/tiles1.png" );
+    background-image: url( "img/tiles1.png" );
 }
 
 .tile-type-undefined {

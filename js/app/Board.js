@@ -10,7 +10,7 @@ class Board {
     this.size = sizeX * sizeY;
     this.dom = null;
     this.tiles = null;
-    this.content = new Array( this.size );
+    this.entity = new Array( this.size );
     this.tileClass = TILE_CLASS + "-" + nameId;
     this.rowIdPrefix = BOARD_ROW_CLASS + "-" + nameId + "-";
   }
@@ -24,21 +24,21 @@ class Board {
     return x + y * this.sizeX;
   }
 
-  setContentXY( x, y, typeId ) {
-    this.setContent( this.xyToIdx( x, y ), typeId );
+  setEntityXY( x, y, entity ) {
+    this.setEntity( this.xyToIdx( x, y ), entity );
   }
 
-  setContent( elemIdx, typeId ) {
-    this.content[elemIdx] = typeId;
-    this.updateCell( elemIdx );
+  setEntity( elemIdx, entity ) {
+    this.entity[elemIdx] = entity;
+    this.updateTile( elemIdx );
   }
 
-  getContentXY( x, y ) {
-    return this.getContent( this.xyToIdx( x, y ) );
+  getEntityXY( x, y ) {
+    return this.getEntity( this.xyToIdx( x, y ) );
   }
 
-  getContent( elemIdx ) {
-    return this.content[elemIdx];
+  getEntity( elemIdx ) {
+    return this.entity[elemIdx];
   }
 
   getTileXY( x, y ) {
@@ -49,8 +49,9 @@ class Board {
     return this.tiles[elemIdx];
   }
 
-  updateCell( elemIdx ) {
-    return this.tileset.updateTile( this.tiles[elemIdx], this.content[elemIdx], this.tileClass );
+  updateTile( elemIdx ) {
+    var ent = this.entity[elemIdx];
+    return this.tileset.updateTile( this.tiles[elemIdx], ( ent === undefined ) ? undefined : ent.typeId, this.tileClass );
   }
 
   update() {

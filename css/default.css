@@ -8,19 +8,26 @@ html {
 
     font-family: "MedievalSharp", "Monotype Corsiva", "URW Chancery L", "Apple Chancery", serif;
     /* note: cursive fallback would usually mean Comic Sans on Win & Mac platforms */
+    font-weight: 700;
+    font-size: 120%;
+
+    cursor: url( "../img/pointer.png" ), auto;
 }
 
 body {
     width: 100%;
     height: 100%;
+
     margin: 0;
     padding: 0;
+
     position: absolute;
     top: 0;
 }
 
 #main-panel {
     height: 100%;
+
     background: url( "../img/brickBlack2.png" );
     color: #eee;
 }

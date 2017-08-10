@@ -33,7 +33,7 @@ function appInit( dom ) {
 
         game.init();
 
-        console.log( "game.init() completed." );
+        logInfo( "game.init() completed." );
     } );
 }
 
@@ -92,7 +92,7 @@ it++; // DEBUG
         }
         path.push( sourcePos );
         ret = path.reverse();
-console.log( "fMP iterations: " + it ); // DEBUG
+logInfo( "fMP iterations: " + it ); // DEBUG
 // 425/613 it for lower/upper left arena corners
         return true;
     };
@@ -184,7 +184,7 @@ it++; // DEBUG
         }
         path.push( sourcePos );
         ret = path.reverse();
-console.log( "fMPN iterations: " + it ); // DEBUG
+logInfo( "fMPN iterations: " + it ); // DEBUG
         return true;
     };
     

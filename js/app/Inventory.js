@@ -2,12 +2,14 @@
 
 /* jslint node: true */
 
+/* TODO: this should handle DOM inventory view (InventoryBoard) only */
+
 class Inventory {
   constructor( tileset, size ) {
     this.tileset = tileset;
     this.size = size;
     this.tiles = new Array( size );
-    this.content = new Array( size );
+    this.entity = new Array( size );
   }
 
   init( dom ) {
@@ -15,21 +17,22 @@ class Inventory {
     this.tiles = this.tileset.createMatrix( dom, this.size, BOARD_SIZE_X, INVENTORY_ROW_CLASS, INVENTORY_ROW_PREFIX );
   }
 
-  getContent( elemIdx ) {
-    return this.content[elemIdx];
+  getEntity( elemIdx ) {
+    return this.entity[elemIdx];
   }
 
   getTile( elemIdx ) {
     return this.tiles[elemIdx];
   }
 
-  setContent( elemIdx, typeId ) {
-    this.content[elemIdx] = typeId;
+  setEntity( elemIdx, typeId ) {
+    this.entity[elemIdx] = typeId;
     this.updateTile( elemIdx );
   }
 
   updateTile( elemIdx ) {
-    this.tileset.updateTile( this.tiles[elemIdx], this.content[elemIdx], INVENTORY_TILE_CLASS );
+    var ent = this.entity[elemIdx];
+    this.tileset.updateTile( this.tiles[elemIdx], ( ent === undefined ) ? undefined : ent.typeId, INVENTORY_TILE_CLASS );
   }
 
   update() {

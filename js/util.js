@@ -9,6 +9,12 @@
 var logToConsole = true;
 var logToAlert = false;
 
+function logInfo( str ) {
+    if ( logToConsole ) {
+        console.log( str );
+    }
+}
+
 function logError( str ) {
     if ( logToConsole ) {
         console.log( str );

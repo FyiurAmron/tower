@@ -22,17 +22,19 @@ class Game {
 
     this.data = null;
     this.protoMap = new Map();
-    this.isInventory = new Set();
-    this.isCreature = new Set();
+    this.isIdItem = new Set();
+    this.isIdCreature = new Set();
 
     this.hero = null;
     this.heroTile = null;
 
     this.ready = false;
+
+    this.lootTable = [ "xp", "gold" ]; // TEMP
   }
 
   init( callback ) {
-    console.log( "game.init();" );
+    logInfo( "game.init();" );
 
     var that = this;
     var dom = this.dom;
@@ -69,19 +71,26 @@ class Game {
     this.data = d;
     d.init( dom.loadingPanelDataProgressBar, function() {
         var prot = d.creatureProto;
+        var proto;
         for( var protoName in prot ) {
-            var id = prot[protoName].typeId;
-            that.protoMap.set( id, protoName );
-            that.isCreature.add( id );
+            proto = prot[protoName];
+            proto.protoName = protoName;
+            proto.isCreature = true;
+            var id = proto.typeId;
+            that.protoMap.set( id, proto );
+            that.isIdCreature.add( id );
         }
-        that.hero = new Hero( prot.hero );
+        that.hero = new Critter( prot.hero, 0, 0, 0 );
         var h = that.hero;
 
         prot = d.itemProto;
         for( var protoName in prot ) {
-            var id = prot[protoName].typeId;
-            that.protoMap.set( id, protoName );
-            that.isInventory.add( id );
+            proto = prot[protoName];
+            proto.protoName = protoName;
+            proto.isItem = true;
+            var id = proto.typeId;
+            that.protoMap.set( id, proto );
+            that.isIdItem.add( id );
         }
 
         var cm = d.charMap;
@@ -89,7 +98,7 @@ class Game {
         that.stageFgCharMap = new Map( cm.stageFgCharRaw );
         that.stageNameMap = new Map( d.stageNameMap.raw );
         var andThen = function() {
-            that.fg.setContentXY( h.x, h.y, h.typeId );
+            that.fg.setEntityXY( h.x, h.y, h.typeId );
             var fg = that.fg;
             for( let i = 0, x = 0, y = 0, max = fg.size; i < max; i++, x++ ) {
                 if ( x === fg.sizeX ) {
@@ -97,7 +106,7 @@ class Game {
                     y++;
                 }
                 fg.tiles[i].addEventListener( "mousedown" /* "click" */, function( evt ) {
-                    //console.log( "i: " + i + " X: " + x + " Y: " + y );
+                    //logInfo( "i: " + i + " X: " + x + " Y: " + y );
                     if ( evt.button !== 0 ) {
                         return;
                     }
@@ -125,9 +134,11 @@ class Game {
   }
 
   setNotReady() {
+    /*
     if ( !game.ready ) {
         logError( "game already !ready" );
     }
+    */
     game.ready = false;
   }
 
@@ -136,62 +147,101 @@ class Game {
     domElem.addEventListener( "animationend", this.setReady );
   }
 
-  heroActionAt( x, y ) {
-    var h = this.hero;
+  removeTransition( x, y ) {
     var fg = this.fg;
-    var con = fg.getContentXY( x, y );
     var that = this;
 
+    this.setNotReady();
+    var domElem = fg.getTileXY( x, y );
+    domElem.style.opacity = 0;
+    domElem.addEventListener( "transitionend", function() {
+        fg.setEntityXY( x, y, undefined );
+        that.setReady();
+    } );
+  }
+
+  heroActionAt( x, y ) {
+    var h = this.hero;
+    //var fg = this.fg;
+    var ent = this.fg.getEntityXY( x, y );
+    var typeId = ( ent === undefined ) ? undefined : ent.typeId;
+    //var that = this;
+
     if ( isAdjacent( x, y, h.x, h.y ) ) {
-        // console.log( "actor event @ [" + x + "," + y + "]" );
+        // logInfo( "actor event @ [" + x + "," + y + "]" );
         // TODO properly handle actor events
-        if ( this.isInventory.has( con ) ) {
-            this.setNotReady();
-            var domElem = fg.getTileXY( x, y );
-            domElem.style.opacity = 0;
-            game.inv.setContent( 0, con );
-            domElem.addEventListener( "transitionend", function() {
-                fg.setContentXY( x, y, undefined );
-                that.setReady();
-            } );
+        if ( this.isIdItem.has( typeId ) ) {
+            var invCell = 0; // TEMP
+            this.inv.setEntity( invCell, this.entityFromTypeId( typeId ) );
+            this.removeTransition( x, y );
             return;
-        }
-        switch ( con ) {
-            case 76:
-                var ovl = this.ovl;
-                var ht = fg.getTileXY( h.x, h.y );
-                var ot = fg.getTileXY( x, y );
-
-                var dir = descriptionFromDirection( x, y, h.x, h.y, true );
-                var animBase = dir + "Anim 0.2s cubic-bezier( 0.0, 0.0, 0.0, 1.0 ) 2 alternate";
-
-                animateOneShot( ht, "slide" + animBase );
-                animateOneShot( ot, "halfSlide" + animBase );
-                this.waitForAnimationEnd( ht );
-
-                //this.audio.fadeOutBgm();
-                var t = this.data.creatureProto[this.protoMap.get( con )];
-                var dam;
-                dam = h.att - t.def;
-                if ( dam > 0 ) {
-                    t.hp -= dam;
-                }
-                dam = t.att - h.def;
-                if ( dam > 0 ) {
-                    h.hp -= dam;
-                }
-                this.updateStats();
-                break;
+        } else if ( this.isIdCreature.has( typeId ) ) {
+            this.doAttack( h.x, h.y, x, y, h, ent );
+            if ( h.hp <= 0 ) {
+                this.gameOver();
+            }
+            if ( ent.hp <= 0 ) {
+                this.doLoot( h, ent );
+                this.removeTransition( x, y );
+                this.audio.playSfx( "growl.mp3" );
+            } else {
+                this.audio.playSfx( "slash.mp3" );
+            }
+            this.updateStats();
+        } else {
+          switch ( typeId ) {
             case 7:
                 this.audio.playSfx( "punch.mp3" );
                 break;
             case undefined:
                 return this.moveHeroTo( x, y );
+          }
         }
-    } else if ( con === undefined ) {
+    } else if ( typeId === undefined ) {
         return this.moveHeroTo( x, y );
     } else {
         // occupied && !adjacent => do nothing
+    }
+  }
+
+  doLoot( victEntity, deadEntity ) {
+    for( var loot of this.lootTable ) {
+        victEntity[loot] += deadEntity[loot];
+    }
+    // TEMP
+  }
+
+  doAttack( attX, attY, defX, defY, attEntity, defEntity ) {
+    if ( attEntity === undefined ) {
+        attEntity = fg.getEntityXY( attX, attY );
+    }
+    if ( defEntity === undefined ) {
+        defEntity = fg.getEntityXY( defX, defY );
+    }
+
+    var fg = this.fg;
+    var ovl = this.ovl;
+
+    var ht = fg.getTileXY( attX, attY );
+    var ot = fg.getTileXY( defX, defY );
+
+    var dir = descriptionFromDirection( defX, defY, attX, attY, true );
+    var animBase = dir + "Anim 0.2s cubic-bezier( 0.0, 0.0, 0.0, 1.0 ) 2 alternate";
+
+    animateOneShot( ht, "slide" + animBase );
+    animateOneShot( ot, "halfSlide" + animBase );
+    this.waitForAnimationEnd( ht );
+
+    //this.audio.fadeOutBgm();
+
+    var dam;
+    dam = attEntity.att - defEntity.def;
+    if ( dam > 0 ) {
+        defEntity.hp -= dam;
+    }
+    dam = defEntity.att - attEntity.def;
+    if ( dam > 0 ) {
+        attEntity.hp -= dam;
     }
   }
 
@@ -200,16 +250,15 @@ class Game {
     var fg = this.fg;
 
     if ( adjacent ) {
-        fg.setContentXY( h.x, h.y, undefined );
-        fg.setContentXY( x, y, h.typeId );
+        fg.setEntityXY( h.x, h.y, undefined );
+        fg.setEntityXY( x, y, h );
         h.x = x;
         h.y = y;
         return;
     }
     
-    var fg = this.fg;
-    var path = findManhattanPathXY( fg.content, fg.sizeX, fg.sizeY, h.x, h.y, x, y );
-    //console.log( path );
+    var path = findManhattanPathXY( fg.entity, fg.sizeX, fg.sizeY, h.x, h.y, x, y );
+    //logInfo( path );
 
     // TEMP shows the path visually
     var tiles = this.bg.tiles;
@@ -223,8 +272,8 @@ class Game {
     }
 
     // TODO proper path steering instead
-    this.fg.setContentXY( h.x, h.y, undefined );
-    this.fg.setContentXY( x, y, h.typeId );
+    this.fg.setEntityXY( h.x, h.y, undefined );
+    this.fg.setEntityXY( x, y, h );
     h.x = x;
     h.y = y;
   }
@@ -274,16 +323,29 @@ class Game {
 
             if ( typeIdBg === undefined ) {
                 if ( typeIdFg === undefined ) {
-                    console.log( "unknown map char '" + c + "' [0x" + c.charCodeAt( 0 ).toString( 16 ) + "]" );
+                    logError( "unknown map char '" + c + "' [0x" + c.charCodeAt( 0 ).toString( 16 ) + "]" );
                 }
                 typeIdBg = DEFAULT_BACKGROUND_TYPE;
             }
 
-            bg.setContent( pos, typeIdBg );
-            fg.setContent( pos, typeIdFg );
+            bg.setEntity( pos, that.entityFromTypeId( typeIdBg ) );
+            fg.setEntity( pos, that.entityFromTypeId( typeIdFg ) );
         }
         that.audio.playBgm( "bgm0" + mapNr + ".mp3" );
         callback();
     } );
+  }
+
+  entityFromTypeId( typeId ) {
+    if ( typeId === undefined ) {
+        return undefined;
+    }
+    var proto = this.protoMap.get( typeId );
+    return ( proto !== undefined ) ? Object.assign( {}, proto ) : { "typeId" : typeId };
+  }
+
+  gameOver() {
+    this.audio.playSfx( "scream.mp3" );
+    alert( "debug: GAME OVER" ); // TEMP
   }
 }

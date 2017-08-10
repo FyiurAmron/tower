@@ -5,7 +5,8 @@
 const AUDIO_PATH = "audio/";
 /* const AUDIO_EXTENSION = ".mp3"; */
 const AUDIO_FILES = [
-  "punch.mp3", "bgm00.mp3",
+  "scream.mp3", "punch.mp3", "growl.mp3", "slash.mp3",
+  "bgm00.mp3",
 ];
 
 const DEFAULT_FADE_TIME = 2.0;
