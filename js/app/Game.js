@@ -4,40 +4,41 @@
 /* jslint laxbreak: true */
 
 class Game {
-  constructor( dom ) {
-    this.dom = dom;
+  constructor( gameConfig ) {
+    this.dom = null;
+    
+    this.tileset = null;
 
-    this.tileset = new TileSet( TILE_SIZE_X, TILE_SIZE_Y, TILESET_COLUMNS, TILE_CLASS, TILE_TYPE_CLASS_PREFIX );
+    this.bg = null;
+    this.fg = null;
+    this.ovl = null;
 
-    this.bg = new Board( this.tileset, BOARD_SIZE_X, BOARD_SIZE_Y, "bg" );
-    this.fg = new Board( this.tileset, BOARD_SIZE_X, BOARD_SIZE_Y, "fg" );
-    this.ovl = new Board( this.tileset, BOARD_SIZE_X, BOARD_SIZE_Y, "ovl" );
-
-    this.inv = new Inventory( this.tileset, INVENTORY_SIZE );
+    this.inv = null;
 
     this.stageBgCharMap = null;
     this.stageFgCharMap = null;
 
-    this.audio = new AudioManager( AUDIO_FILES );
+    this.audio = new AudioManager();
 
     this.data = null;
     this.protoMap = new Map();
     this.isIdItem = new Set();
     this.isIdCreature = new Set();
 
+    this.lootTable = [ "xp", "gold" ]; // TEMP
+
     this.hero = null;
-    this.heroTile = null;
+    //this.heroTile = null;
 
     this.ready = false;
-
-    this.lootTable = [ "xp", "gold" ]; // TEMP
   }
 
-  init( callback ) {
-    logInfo( "game.init();" );
+  init( dataConfig, dom, callback ) {
+    logInfo( "game.init() started..." );
+    
+    this.dom = dom;
 
     var that = this;
-    var dom = this.dom;
     var audio = this.audio;
 
     audio.setMaxGains( 0.2, 1.0 );
@@ -51,25 +52,38 @@ class Game {
             return;
         }
 
-        var muteState = audio.toggleMute( true );
-        animateOneShot( cb, ( muteState ? "rotateLeft " : "rotateRight " ) + DEFAULT_FADE_TIME + "s linear" );
+        var muteState = audio.toggleMute( true, true, false ); // ( fade, bgm, sfx )
+        animateOneShot( cb, ( muteState ? "rotateLeft " : "rotateRight " ) + that.data.audioConfig.defaultFadeTime + "s linear" );
     } );
 
-    this.inv.init( dom.inventoryPanel );
-
-    this.bg.init( dom.boardBackground );
-    this.fg.init( dom.boardForeground );
-    this.ovl.init( dom.boardOverlay );
-
-    var widthStr = "width: " + TILE_SIZE_X * BOARD_SIZE_X + "px; ";
-    //dom.statPanel.style = widthStr;
-    dom.inventoryPanel.style = widthStr;
-    dom.gamePanel.style = widthStr;
-    dom.topPanel.style = widthStr;
-
-    var d = new Data( DATA_FILES );
+    var d = new Data();
     this.data = d;
-    d.init( dom.loadingPanelDataProgressBar, function() {
+    d.init( dataConfig, dom.loadingPanelDataProgressBar, function() {
+        var gameConfig = d.gameConfig;
+        var x = gameConfig.boardSizeX;
+        var y = gameConfig.boardSizeY;
+
+        var widthStr = "width: " + TILE_SIZE_X * x + "px; ";
+        //dom.statPanel.style = widthStr;
+        dom.inventoryPanel.style = widthStr;
+        dom.gamePanel.style = widthStr;
+        dom.topPanel.style = widthStr;
+
+        that.tileset = new TileSet( TILE_SIZE_X, TILE_SIZE_Y, gameConfig.tilesetColumns, TILE_CLASS, TILE_TYPE_CLASS_PREFIX );
+        var ts = that.tileset;
+
+        that.bg = new Board( ts, x, y, "bg" );
+        that.fg = new Board( ts, x, y, "fg" );
+        that.ovl = new Board( ts, x, y, "ovl" );
+
+        that.inv = new Inventory( ts, gameConfig.inventorySize );
+
+        that.inv.init( gameConfig.inventorySize /* * 2 */, dom.inventoryPanel );
+
+        that.bg.init( dom.boardBackground );
+        that.fg.init( dom.boardForeground );
+        that.ovl.init( dom.boardOverlay );
+
         var prot = d.creatureProto;
         var proto;
         for( var protoName in prot ) {
@@ -80,8 +94,6 @@ class Game {
             that.protoMap.set( id, proto );
             that.isIdCreature.add( id );
         }
-        that.hero = new Critter( prot.hero, 0, 0, 0 );
-        var h = that.hero;
 
         prot = d.itemProto;
         for( var protoName in prot ) {
@@ -97,31 +109,19 @@ class Game {
         that.stageBgCharMap = new Map( cm.stageBgCharRaw );
         that.stageFgCharMap = new Map( cm.stageFgCharRaw );
         that.stageNameMap = new Map( d.stageNameMap.raw );
-        var andThen = function() {
-            that.fg.setEntityXY( h.x, h.y, h.typeId );
-            var fg = that.fg;
-            for( let i = 0, x = 0, y = 0, max = fg.size; i < max; i++, x++ ) {
-                if ( x === fg.sizeX ) {
-                    x = 0;
-                    y++;
-                }
-                fg.tiles[i].addEventListener( "mousedown" /* "click" */, function( evt ) {
-                    //logInfo( "i: " + i + " X: " + x + " Y: " + y );
-                    if ( evt.button !== 0 ) {
-                        return;
-                    }
-                    if ( !that.ready ) {
-                        return;
-                    }
-                    that.heroActionAt( x, y );
-                } );
-            }
-            that.update( false );
+
+        that.audio.init( d.audioConfig, dom.loadingPanelAudioProgressBar, function() {
             var lpws = dom.loadingPanelWrapper.style;
             lpws.opacity = 0.0;
-        };
-        that.audio.init( dom.loadingPanelAudioProgressBar, function() {
-            that.loadMap( that.stageNameMap.get( h.z ), andThen );
+
+/* move this to external function */
+            that.hero = new Critter( d.creatureProto.hero, 0, 0, 0 );
+            var h = that.hero;
+            that.loadMap( that.stageNameMap.get( h.z ), function() {
+              that.fg.setEntityXY( h.x, h.y, that.entityFromTypeId( h.typeId ) );
+              that.update( false );
+            } );
+/* */
         } );
     } );
   }
@@ -153,9 +153,10 @@ class Game {
 
     this.setNotReady();
     var domElem = fg.getTileXY( x, y );
-    domElem.style.opacity = 0;
+    domElem.style.opacity = 0.0;
     domElem.addEventListener( "transitionend", function() {
         fg.setEntityXY( x, y, undefined );
+        domElem.style.opacity = null;
         that.setReady();
     } );
   }
@@ -174,6 +175,7 @@ class Game {
             var invCell = 0; // TEMP
             this.inv.setEntity( invCell, this.entityFromTypeId( typeId ) );
             this.removeTransition( x, y );
+            this.audio.playSfx( "blub.mp3" );
             return;
         } else if ( this.isIdCreature.has( typeId ) ) {
             this.doAttack( h.x, h.y, x, y, h, ent );
@@ -183,9 +185,7 @@ class Game {
             if ( ent.hp <= 0 ) {
                 this.doLoot( h, ent );
                 this.removeTransition( x, y );
-                this.audio.playSfx( "growl.mp3" );
-            } else {
-                this.audio.playSfx( "slash.mp3" );
+                this.audio.playSfx( "skel_death.mp3" );
             }
             this.updateStats();
         } else {
@@ -194,7 +194,7 @@ class Game {
                 this.audio.playSfx( "punch.mp3" );
                 break;
             case undefined:
-                return this.moveHeroTo( x, y );
+                return this.moveHeroTo( x, y, true );
           }
         }
     } else if ( typeId === undefined ) {
@@ -225,12 +225,15 @@ class Game {
     var ht = fg.getTileXY( attX, attY );
     var ot = fg.getTileXY( defX, defY );
 
-    var dir = descriptionFromDirection( defX, defY, attX, attY, true );
-    var animBase = dir + "Anim 0.2s cubic-bezier( 0.0, 0.0, 0.0, 1.0 ) 2 alternate";
+    var dir, animBase;
 
-    animateOneShot( ht, "slide" + animBase );
-    animateOneShot( ot, "halfSlide" + animBase );
-    this.waitForAnimationEnd( ht );
+    dir = descriptionFromDirection( defX, defY, attX, attY, true );
+    animBase = dir + this.data.gameConfig.attackAnimStr;
+    animateOneShot( ht, "attack" + animBase );
+    animateOneShot( ot, "defend" + animBase );
+    this.waitForAnimationEnd( ht ); // FIXME removeTransition
+    // FIXME can move into non-empty cell on death, hero disappears after moving into a previously occupied cell
+    this.audio.playSfx( "skel_slash_n_growl.mp3" );
 
     //this.audio.fadeOutBgm();
 
@@ -254,10 +257,15 @@ class Game {
         fg.setEntityXY( x, y, h );
         h.x = x;
         h.y = y;
-        return;
+
+        this.audio.playSfx( "footsteps.mp3" );
+        return true;
     }
     
     var path = findManhattanPathXY( fg.entity, fg.sizeX, fg.sizeY, h.x, h.y, x, y );
+    if ( path === null ) {
+        return false;
+    }
     //logInfo( path );
 
     // TEMP shows the path visually
@@ -276,6 +284,9 @@ class Game {
     this.fg.setEntityXY( x, y, h );
     h.x = x;
     h.y = y;
+
+    this.audio.playSfx( "footsteps.mp3" );
+    return true;
   }
 
   updateTitle() { // synchronous
@@ -310,13 +321,14 @@ class Game {
     var fgIdMap = this.stageFgCharMap;
     var that = this;
 
-    readXhr( DATA_PATH + "map" + mapNr + ".txt", true, function( mapStr ) {
-        for ( var i = 0, pos = -1, len = mapStr.length; i < len; i++ ) {
+    readXhr( "data/maps/map" + padZero( mapNr, 2 ) + ".txt", true, function( mapStr ) {
+        for ( let i = 0, x = -1, y = 0, pos = -1, len = mapStr.length; i < len; i++ ) {
             var c = mapStr.charAt( i );
             if ( c === "\n" || c === "\r" ) {
                 continue;
             }
             pos++;
+            x++;
 
             var typeIdBg = bgIdMap.get( c );
             var typeIdFg = fgIdMap.get( c );
@@ -325,14 +337,33 @@ class Game {
                 if ( typeIdFg === undefined ) {
                     logError( "unknown map char '" + c + "' [0x" + c.charCodeAt( 0 ).toString( 16 ) + "]" );
                 }
-                typeIdBg = DEFAULT_BACKGROUND_TYPE;
+                typeIdBg = that.data.gameConfig.defaultBackgroundType;
             }
 
             bg.setEntity( pos, that.entityFromTypeId( typeIdBg ) );
             fg.setEntity( pos, that.entityFromTypeId( typeIdFg ) );
+
+            if ( x === fg.sizeX ) {
+                x = 0;
+                y++;
+            }
+
+            fg.tiles[pos].addEventListener( "mousedown" /* "click" */, function( evt ) {
+                //logInfo( "pos: " + pos + " X: " + x + " Y: " + y );
+                if ( evt.button !== 0 ) {
+                    return;
+                }
+                if ( !that.ready ) {
+                    return;
+                }
+                that.heroActionAt( x, y );
+            } );
         }
+
         that.audio.playBgm( "bgm0" + mapNr + ".mp3" );
-        callback();
+        if ( callback !== undefined ) {
+            callback();
+        }
     } );
   }
 

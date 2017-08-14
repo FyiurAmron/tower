@@ -1,0 +1,10 @@
+{
+    "audioPath" : "audio/",
+    "audioExtensions" : [ ".mp3" ],
+    "defaultFadeTime" : 2.0,
+    "audioFiles" : [
+        "scream.mp3", "punch.mp3", "slash.mp3", "footsteps.mp3", "blub.mp3",
+        "skel_death.mp3", "skel_slash_n_growl.mp3",
+        "bgm00.mp3"
+    ]
+}

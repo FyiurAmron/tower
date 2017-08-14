@@ -24,16 +24,18 @@ function appInit( dom ) {
         css.innerHTML = cssStr;
         document.head.appendChild( css );
 
-        game = new Game( dom );
+        readXhr( DATA_CONFIG_PATH, true, function( dataConfigStr ) {
+            game = new Game();
 
 // init debug here
-//        game.inv.content[2] = 55;
-//        game.inv.content[5] = 48;
+//            game.inv.content[2] = 55;
+//            game.inv.content[5] = 48;
 // end of init debug
 
-        game.init();
+            game.init( JSON.parse( dataConfigStr ), dom );
 
-        logInfo( "game.init() completed." );
+            logInfo( "game.init() completed." );
+        } );
     } );
 }
 
@@ -41,13 +43,16 @@ const DIR_NAMES     = [ "up", "right", "down", "left" ];
 const DIR_NAMES_CAP = [ "Up", "Right", "Down", "Left" ];
 
 // note: the Y direction is in screen coordinates (reversed vs Carthesian)
-function descriptionFromDirection( x, y, x2, y2, capitalize ) {
+function indexFromDirection( x, y, x2, y2, capitalize ) {
     var distX = x - x2;
     var distY = y - y2;
-    var idx = ( Math.abs( distX ) > Math.abs( distY ) )
+    return ( Math.abs( distX ) > Math.abs( distY ) )
         ? ( ( distX > 0 ) ? 1 : 3 )
         : ( ( distY > 0 ) ? 2 : 0 );
-    return ( capitalize ? DIR_NAMES_CAP : DIR_NAMES )[idx];
+}
+
+function descriptionFromDirection( x, y, x2, y2, capitalize ) {
+    return ( capitalize ? DIR_NAMES_CAP : DIR_NAMES )[indexFromDirection( x, y, x2, y2 )];
 }
 
 function isAdjacent( x, y, x2, y2 ) { // corners excluded; (+1,0),(-1,0),(0,+1),(0,-1)

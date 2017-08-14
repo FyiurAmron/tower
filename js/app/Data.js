@@ -2,28 +2,32 @@
 
 /* jslint node: true */
 
-const DATA_PATH = "data/";
-const DATA_EXTENSION = ".json";
-const DATA_FILES = [
-  "charMap", "stageNameMap",
-  "creatureProto", "itemProto",
-];
-
 class Data {
-  constructor( loadArray ) {
-    this.loadArray = loadArray;
-    this.loadSize = loadArray.length;
-    this.loadSet = new Set( loadArray );
+  constructor() {
+    this.loadArray = null;
+    this.loadSize = null;
+    this.loadSet = null;
+    this.dataConfig = null;
   }
   
-  init( progressBarDom, callback ) {
+  init( dataConfig, progressBarDom, callback ) {
+    var dataFiles = dataConfig.dataFiles;
+    var dataPath = dataConfig.dataPath;
+    var dataExtension = dataConfig.dataExtension;
+
+    this.dataConfig = dataConfig;
+
+    this.loadArray = dataFiles;
+    this.loadSize = dataFiles.length;
+    this.loadSet = new Set( dataFiles );
+
     var cnt = this.loadSize;
     var ls = this.loadSet;
     var la = this.loadArray;
     var that = this;
     for( let i = 0; i < cnt; i++ ) {
 
-        readXhr( DATA_PATH + la[i] + DATA_EXTENSION, true, function( dataStr ) {
+        readXhr( dataPath + la[i] + dataExtension, true, function( dataStr ) {
             that[la[i]] = JSON.parse( dataStr );
 
             ls.delete( la[i] );

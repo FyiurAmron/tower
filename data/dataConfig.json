@@ -1,0 +1,9 @@
+{
+    "dataPath" : "data/",
+    "dataExtension" : ".json",
+    "dataFiles" : [
+        "audioConfig", "gameConfig",
+        "charMap", "stageNameMap",
+        "creatureProto", "itemProto"
+    ]
+}

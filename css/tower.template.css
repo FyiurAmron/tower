@@ -181,6 +181,70 @@
     100% { transform: translateY( calc( -%%tileSizeY%%px / 2 ) ); }
 }
 
+@keyframes attackRightAnim {
+    0%   { transform: translateX( 0 ); }
+    25%  { transform: translateX( %%tileSizeX%%px ); }
+    50%  { transform: translateX( 0 ); }
+    75%  { transform: translateX( calc( -%%tileSizeX%%px / 2 ) ); }
+    100% { transform: translateX( 0 ); }
+}
+
+@keyframes attackLeftAnim {
+    0%   { transform: translateX( 0 ); }
+    25%  { transform: translateX( -%%tileSizeX%%px ); }
+    50%  { transform: translateX( 0 ); }
+    75%  { transform: translateX( calc( %%tileSizeX%%px / 2 ) ); }
+    100% { transform: translateX( 0 ); }
+}
+
+@keyframes attackDownAnim {
+    0%   { transform: translateY( 0 ); }
+    25%  { transform: translateY( %%tileSizeY%%px ); }
+    50%  { transform: translateY( 0 ); }
+    75%  { transform: translateY( calc( -%%tileSizeY%%px / 2 ) ); }
+    100% { transform: translateY( 0 ); }
+}
+
+@keyframes attackUpAnim {
+    0%   { transform: translateY( 0 ); }
+    25%  { transform: translateY( -%%tileSizeY%%px ); }
+    50%  { transform: translateY( 0 ); }
+    75%  { transform: translateY( calc( %%tileSizeY%%px / 2 ) ); }
+    100% { transform: translateY( 0 ); }
+}
+
+@keyframes defendRightAnim {
+    0%   { transform: translateX( 0 ); }
+    25%  { transform: translateX( calc( %%tileSizeX%%px / 2 ) ); }
+    50%  { transform: translateX( 0 ); }
+    75%  { transform: translateX( -%%tileSizeX%%px ); }
+    100% { transform: translateX( 0 ); }
+}
+
+@keyframes defendLeftAnim {
+    0%   { transform: translateX( 0 ); }
+    25%  { transform: translateX( calc( -%%tileSizeX%%px / 2 ) ); }
+    50%  { transform: translateX( 0 ); }
+    75%  { transform: translateX( %%tileSizeX%%px ); }
+    100% { transform: translateX( 0 ); }
+}
+
+@keyframes defendDownAnim {
+    0%   { transform: translateY( 0 ); }
+    25%  { transform: translateY( calc( %%tileSizeY%%px / 2 ) ); }
+    50%  { transform: translateY( 0 ); }
+    75%  { transform: translateY( -%%tileSizeY%%px ); }
+    100% { transform: translateY( 0 ); }
+}
+
+@keyframes defendUpAnim {
+    0%   { transform: translateY( 0 ); }
+    25%  { transform: translateY( calc( -%%tileSizeY%%px / 2 ) ); }
+    50%  { transform: translateY( 0 ); }
+    75%  { transform: translateY( %%tileSizeY%%px ); }
+    100% { transform: translateY( 0 ); }
+}
+
 @keyframes fadeAnim {
     0%   { opacity: 0; }
     100% { opacity: 1; }

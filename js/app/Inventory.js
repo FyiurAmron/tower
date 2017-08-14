@@ -12,9 +12,9 @@ class Inventory {
     this.entity = new Array( size );
   }
 
-  init( dom ) {
+  init( rowSize, dom ) {
     dom.innerHTML = "";
-    this.tiles = this.tileset.createMatrix( dom, this.size, BOARD_SIZE_X, INVENTORY_ROW_CLASS, INVENTORY_ROW_PREFIX );
+    this.tiles = this.tileset.createMatrix( dom, this.size, rowSize, INVENTORY_ROW_CLASS, INVENTORY_ROW_PREFIX );
   }
 
   getEntity( elemIdx ) {

@@ -11,17 +11,21 @@ var logToAlert = false;
 
 function logInfo( str ) {
     if ( logToConsole ) {
-        console.log( str );
+        console.log( "Info: " + str );
     }
 }
 
 function logError( str ) {
     if ( logToConsole ) {
-        console.log( str );
+        console.log( "ERROR: " + str );
     }
     if ( logToAlert ) {
-        alert( str );
+        alert( "ERROR: " + str );
     }
+}
+
+function padZero( str, zeroes ) {
+    return ( "0".repeat( zeroes ) + str ).slice( -zeroes );
 }
 
 function readXhr( url, async, callback, responseType ) {

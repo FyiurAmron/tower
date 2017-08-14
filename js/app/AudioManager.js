@@ -2,20 +2,13 @@
 
 /* jslint node: true */
 
-const AUDIO_PATH = "audio/";
-/* const AUDIO_EXTENSION = ".mp3"; */
-const AUDIO_FILES = [
-  "scream.mp3", "punch.mp3", "growl.mp3", "slash.mp3",
-  "bgm00.mp3",
-];
-
-const DEFAULT_FADE_TIME = 2.0;
-
 class AudioManager {
-  constructor( loadArray ) {
-    this.loadArray = loadArray;
-    this.loadSize = loadArray.length;
-    this.loadSet = new Set( loadArray );
+  constructor() {
+    this.loadArray = null;
+    this.loadSize = null;
+    this.loadSet = null;
+
+    this.audioConfig = null;
 
     var AudioContext = window.AudioContext || window.webkitAudioContext;
     this.context = new AudioContext();
@@ -34,14 +27,23 @@ class AudioManager {
     this.sfxGain.connect( this.context.destination );
   }
 
-  init( progressBarDom, callback ) {
+  init( audioConfig, progressBarDom, callback ) {
+    this.audioConfig = audioConfig;
+
+    var loadArray = audioConfig.audioFiles;
+    var audioPath = audioConfig.audioPath;
+
+    this.loadArray = loadArray;
+    this.loadSize = loadArray.length;
+    this.loadSet = new Set( loadArray );
+
     var cnt = this.loadSize;
     var ls = this.loadSet;
     var la = this.loadArray;
     var that = this;
     for( let i = 0; i < cnt; i++ ) {
 
-        this.loadUrl( AUDIO_PATH + la[i] /* + AUDIO_EXTENSION */, function( buf ) {
+        this.loadUrl( audioPath + la[i] /* + AUDIO_EXTENSION */, function( buf ) {
             that.bufferMap.set( la[i], buf );
 
             ls.delete( la[i] );
@@ -66,29 +68,46 @@ class AudioManager {
   }
 
   defaultFadeEndTime() {
-    return this.context.currentTime + DEFAULT_FADE_TIME;
+    return this.context.currentTime + this.audioConfig.defaultFadeTime;
   }
 
-  toggleMute( fade ) {
+  toggleMute( fade, bgm, sfx ) {
     var bgmTarget, sfxTarget;
     var sgg = this.sfxGain.gain;
     var bgg = this.bgmGain.gain;
     var muteState;
-    if ( bgg.value !== 0 && sgg.value !== 0 ) { // mute
-        bgmTarget = 0;
-        sfxTarget = 0;
+
+    if ( ( !bgm || bgg.value !== 0 ) && ( !sfx || sgg.value !== 0 ) ) { // mute
+        if ( bgm ) {
+            bgmTarget = 0;
+        }
+        if ( sfx ) {
+           sfxTarget = 0;
+        }
         muteState = true;
     } else {
-        bgmTarget = bgg.currentMaxValue;
-        sfxTarget = sgg.currentMaxValue;
+        if ( bgm ) {
+            bgmTarget = bgg.currentMaxValue;
+        }
+        if ( bgm ) {
+            sfxTarget = sgg.currentMaxValue;
+        }
         muteState = false;
     }
     if ( fade ) {
-        bgg.linearRampToValueAtTime( bgmTarget, this.defaultFadeEndTime() );
-        sgg.linearRampToValueAtTime( sfxTarget, this.defaultFadeEndTime() );
+        if ( bgm ) {
+            bgg.linearRampToValueAtTime( bgmTarget, this.defaultFadeEndTime() );
+        }
+        if ( sfx ) {
+            sgg.linearRampToValueAtTime( sfxTarget, this.defaultFadeEndTime() );
+        }
     } else {
-        bgg.value = bgmTarget;
-        sgg.value = sfxTarget;
+        if ( bgm ) {
+            bgg.value = bgmTarget;
+        }
+        if ( sfx ) {
+            sgg.value = sfxTarget;
+        }
     }
     return muteState;
   }
@@ -143,7 +162,11 @@ class AudioManager {
   }
 
   playNamed( name, looped, gainNode ) {
-    var bs = this.play( this.bufferMap.get( name ), looped, gainNode );
+    var buffer = this.bufferMap.get( name );
+    if ( buffer === undefined ) {
+        return logError( "audio '" + name + "' is not loaded and can't be played" );
+    }
+    var bs = this.play( buffer, looped, gainNode );
     if ( looped ) {
         bs.loop = true;
         this.activeLoopNames.set( name, bs );

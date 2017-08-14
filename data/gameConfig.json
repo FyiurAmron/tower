@@ -1,0 +1,10 @@
+{
+    "tilesetColumns" : 11,
+    "defaultBackgroundType" : 5,
+    "boardSizeX" : 16,
+    "boardSizeY" : 22,
+    "inventorySize" : 16,
+    "attackAnimStr" : "Anim 0.4s linear",
+
+    "attackAnimStrOld" : "Anim 0.2s cubic-bezier( 0.0, 0.0, 0.0, 1.0 ) 2 alternate"
+}
