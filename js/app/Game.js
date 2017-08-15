@@ -38,13 +38,13 @@ class Game {
     var wid = this.waitId;
     this.waitForSet.add( wid );
     this.waitId++;
-    logDebug( "waitFor( " + wid + " );" );
+    // logDebug( "waitFor( " + wid + " );" );
     return wid;
   }
 
   waitCompleted( wid ) {
     this.waitForSet.delete( wid );
-    logDebug( "waitCompleted( " + wid + " );" );
+    // logDebug( "waitCompleted( " + wid + " );" );
   }
 
   isWaiting() {
@@ -131,9 +131,14 @@ class Game {
         that.audio.init( d.audioConfig, dom.loadingPanelAudioProgressBar, function() {
             var lpws = dom.loadingPanelWrapper.style;
             lpws.opacity = 0.0;
-            that.initHero( new Vec3( 0, 0, 0 ) ); // TEMP implement this as new game behaviour
+
+            that.newGame(); // TEMP display main menu instead
         } );
     } );
+  }
+
+  newGame() {
+      this.initHero( new Vec3( 0, 0, 0 ) );
   }
 
   initHero( pos ) {
@@ -184,7 +189,7 @@ class Game {
     //var that = this;
 
     if ( isAdjacent( x, y, hpos.x, hpos.y ) ) {
-        logDebug( "actor event @ [" + x + "," + y + "]" );
+        // logDebug( "actor event @ [" + x + "," + y + "]" );
         // TODO properly handle actor events
         if ( this.isIdItem.has( typeId ) ) {
             var invCell = 0; // TEMP
@@ -195,6 +200,7 @@ class Game {
         } else if ( this.isIdCreature.has( typeId ) ) {
             this.doAttack( hpos.x, hpos.y, x, y, h, ent );
             if ( h.hp <= 0 ) {
+                this.removeWithTransition( hpos.x, hpos.y );
                 this.gameOver();
             }
             if ( ent.hp <= 0 ) {
@@ -372,12 +378,12 @@ class Game {
             }
 
             fg.tiles[pos].addEventListener( "mousedown" /* "click" */, function( evt ) {
-                logDebug( "mousedown: " + pos + " X: " + x + " Y: " + y );
+                // logDebug( "mousedown: " + pos + " X: " + x + " Y: " + y );
                 if ( evt.button !== 0 ) {
                     return;
                 }
                 if ( that.isWaiting() ) {
-                    logDebug( "NOT READY YET" );
+                    // logDebug( "NOT READY YET" );
                     return;
                 }
                 that.heroActionAt( x, y );
@@ -402,6 +408,8 @@ class Game {
   gameOver() {
     this.audio.playSfx( "scream.mp3" );
     logInfo( "GAME OVER" );
+    this.audio.stopAllLoops();
     alert( "debug: GAME OVER" ); // TEMP
+    this.newGame(); // TEMP go to main menu instead
   }
 }
