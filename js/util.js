@@ -9,15 +9,23 @@
 var logToConsole = true;
 var logToAlert = false;
 
+var debug = true;
+
+function logDebug( str ) {
+    if ( debug ) {
+        console.log( "debug: " + str );
+    }
+}
+
 function logInfo( str ) {
     if ( logToConsole ) {
-        console.log( "Info: " + str );
+        console.info( "Info: " + str );
     }
 }
 
 function logError( str ) {
     if ( logToConsole ) {
-        console.log( "ERROR: " + str );
+        console.warn( "ERROR: " + str );
     }
     if ( logToAlert ) {
         alert( "ERROR: " + str );

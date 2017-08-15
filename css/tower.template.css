@@ -56,7 +56,8 @@
     height: %%tileSizeY%%px;
     display: inline-block;
     position: absolute;
-    transition: opacity 1s;
+    /* transition: opacity 1s; */
+    transition: opacity 0.4s;
 }
 
 .tile > div {

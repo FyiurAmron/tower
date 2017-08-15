@@ -8,7 +8,7 @@
 
 const APP_SCRIPT_PATH = "js/app/";
 const IMPORT_SCRIPTS = [
-  "const.js", "util.js", "Data.js", "AudioManager.js",
+  "const.js", "util.js", "Data.js", "AudioManager.js", "Vec3.js",
   "Tileset.js", "Inventory.js", "Board.js", "Creature.js",
   "Game.js"
 ];

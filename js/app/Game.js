@@ -30,7 +30,25 @@ class Game {
     this.hero = null;
     //this.heroTile = null;
 
-    this.ready = false;
+    this.waitId = 0;
+    this.waitForSet = new Set();
+  }
+
+  waitFor() {
+    var wid = this.waitId;
+    this.waitForSet.add( wid );
+    this.waitId++;
+    logDebug( "waitFor( " + wid + " );" );
+    return wid;
+  }
+
+  waitCompleted( wid ) {
+    this.waitForSet.delete( wid );
+    logDebug( "waitCompleted( " + wid + " );" );
+  }
+
+  isWaiting() {
+    return this.waitForSet.size !== 0;
   }
 
   init( dataConfig, dom, callback ) {
@@ -113,83 +131,83 @@ class Game {
         that.audio.init( d.audioConfig, dom.loadingPanelAudioProgressBar, function() {
             var lpws = dom.loadingPanelWrapper.style;
             lpws.opacity = 0.0;
-
-/* move this to external function */
-            that.hero = new Critter( d.creatureProto.hero, 0, 0, 0 );
-            var h = that.hero;
-            that.loadMap( that.stageNameMap.get( h.z ), function() {
-              that.fg.setEntityXY( h.x, h.y, that.entityFromTypeId( h.typeId ) );
-              that.update( false );
-            } );
-/* */
+            that.initHero( new Vec3( 0, 0, 0 ) ); // TEMP implement this as new game behaviour
         } );
     } );
   }
 
-  setReady() {
-    if ( game.ready ) {
-        logError( "game already ready" );
-    }
-    game.ready = true;
+  initHero( pos ) {
+    this.hero = new Creature( this.data.creatureProto.hero, pos );
+    var hpos = this.hero.pos;
+    var that = this;
+    this.loadMap( this.stageNameMap.get( hpos.z ), function() {
+        that.fg.setEntityXY( hpos.x, hpos.y, that.entityFromTypeId( that.hero.typeId ) );
+        that.update( false );
+    } );
   }
 
-  setNotReady() {
-    /*
-    if ( !game.ready ) {
-        logError( "game already !ready" );
-    }
-    */
-    game.ready = false;
+  waitForEvent( domElem, eventName, callback ) {
+    var wid = this.waitFor();
+    var that = this;
+    var eventListener = function( evt ) { 
+        if ( callback !== undefined ) {
+            callback( evt );
+        }
+        domElem.removeEventListener( eventName, eventListener );
+        that.waitCompleted( wid );
+    };
+    domElem.addEventListener( eventName, eventListener );
   }
 
   waitForAnimationEnd( domElem ) {
-    this.setNotReady();
-    domElem.addEventListener( "animationend", this.setReady );
+    this.waitForEvent( domElem, "animationend" );
   }
 
-  removeTransition( x, y ) {
+  removeWithTransition( x, y ) {
     var fg = this.fg;
     var that = this;
-
-    this.setNotReady();
     var domElem = fg.getTileXY( x, y );
     domElem.style.opacity = 0.0;
-    domElem.addEventListener( "transitionend", function() {
+
+    this.waitForEvent( domElem, "transitionend", function() {
         fg.setEntityXY( x, y, undefined );
         domElem.style.opacity = null;
-        that.setReady();
     } );
   }
 
   heroActionAt( x, y ) {
     var h = this.hero;
+    var hpos = h.pos;
     //var fg = this.fg;
     var ent = this.fg.getEntityXY( x, y );
     var typeId = ( ent === undefined ) ? undefined : ent.typeId;
     //var that = this;
 
-    if ( isAdjacent( x, y, h.x, h.y ) ) {
-        // logInfo( "actor event @ [" + x + "," + y + "]" );
+    if ( isAdjacent( x, y, hpos.x, hpos.y ) ) {
+        logDebug( "actor event @ [" + x + "," + y + "]" );
         // TODO properly handle actor events
         if ( this.isIdItem.has( typeId ) ) {
             var invCell = 0; // TEMP
             this.inv.setEntity( invCell, this.entityFromTypeId( typeId ) );
-            this.removeTransition( x, y );
+            this.removeWithTransition( x, y );
             this.audio.playSfx( "blub.mp3" );
             return;
         } else if ( this.isIdCreature.has( typeId ) ) {
-            this.doAttack( h.x, h.y, x, y, h, ent );
+            this.doAttack( hpos.x, hpos.y, x, y, h, ent );
             if ( h.hp <= 0 ) {
                 this.gameOver();
             }
             if ( ent.hp <= 0 ) {
                 this.doLoot( h, ent );
-                this.removeTransition( x, y );
+                this.removeWithTransition( x, y );
                 this.audio.playSfx( "skel_death.mp3" );
             }
             this.updateStats();
         } else {
           switch ( typeId ) {
+            case 0:
+                this.audio.playSfx( "hmm.mp3" ); // TEMP
+                break;
             case 7:
                 this.audio.playSfx( "punch.mp3" );
                 break;
@@ -231,7 +249,7 @@ class Game {
     animBase = dir + this.data.gameConfig.attackAnimStr;
     animateOneShot( ht, "attack" + animBase );
     animateOneShot( ot, "defend" + animBase );
-    this.waitForAnimationEnd( ht ); // FIXME removeTransition
+    this.waitForAnimationEnd( ht ); // FIXME removeWithTransition
     // FIXME can move into non-empty cell on death, hero disappears after moving into a previously occupied cell
     this.audio.playSfx( "skel_slash_n_growl.mp3" );
 
@@ -250,23 +268,24 @@ class Game {
 
   moveHeroTo( x, y, adjacent ) {
     var h = this.hero;
+    var hpos = h.pos;
     var fg = this.fg;
 
     if ( adjacent ) {
-        fg.setEntityXY( h.x, h.y, undefined );
+        this.removeWithTransition( hpos.x, hpos.y );
         fg.setEntityXY( x, y, h );
-        h.x = x;
-        h.y = y;
+        hpos.x = x;
+        hpos.y = y;
 
         this.audio.playSfx( "footsteps.mp3" );
         return true;
     }
     
-    var path = findManhattanPathXY( fg.entity, fg.sizeX, fg.sizeY, h.x, h.y, x, y );
+    var path = findManhattanPathXY( fg.entity, fg.sizeX, fg.sizeY, hpos.x, hpos.y, x, y );
     if ( path === null ) {
         return false;
     }
-    //logInfo( path );
+    // logDebug( path );
 
     // TEMP shows the path visually
     var tiles = this.bg.tiles;
@@ -280,28 +299,29 @@ class Game {
     }
 
     // TODO proper path steering instead
-    this.fg.setEntityXY( h.x, h.y, undefined );
+    this.removeWithTransition( hpos.x, hpos.y );
     this.fg.setEntityXY( x, y, h );
-    h.x = x;
-    h.y = y;
+    hpos.x = x;
+    hpos.y = y;
 
     this.audio.playSfx( "footsteps.mp3" );
     return true;
   }
 
   updateTitle() { // synchronous
-    var hero = this.hero;
-    document.title = "X: " + hero.x + "\u2007 Y: " + hero.y + "\u2007 Z: " + hero.z;
+    var hpos = this.hero.pos;
+    document.title = "X: " + hpos.x + "\u2007 Y: " + hpos.y + "\u2007 Z: " + hpos.z; // TEMP
   }
 
   updateStats() { // synchronous
-    var hero = this.hero;
-    this.dom.statPanel.innerHTML = "HP: " + hero.hp + " ATT: " + hero.att + " DEF: " + hero.def + " SPD: " + hero.spd
-                           + "<br />XP: " + hero.xp + " LEV: " + hero.level + " $$: " + hero.gold;
+    var h = this.hero;
+    this.dom.statPanel.innerHTML = "HP: " + h.hp + " ATT: " + h.att   + " DEF: " + h.def + " SPD: " + h.spd
+                           + "<br />XP: " + h.xp + " LEV: " + h.level + " $$$: " + h.gold;
   }
 
+  // note: all the calls here are/should be synchronous, yet we block events anyway just in case
   update( quickUpdate ) {
-    this.setNotReady();
+    var wid = this.waitFor();
 
     this.updateTitle();
     this.updateStats();
@@ -311,7 +331,8 @@ class Game {
         this.bg.update();
         this.fg.update();
     }
-    this.setReady();
+    
+    this.waitCompleted( wid );
   }
 
   loadMap( mapNr, callback ) {
@@ -320,6 +341,8 @@ class Game {
     var bgIdMap = this.stageBgCharMap;
     var fgIdMap = this.stageFgCharMap;
     var that = this;
+    var defaultBackgroundType = this.data.gameConfig.defaultBackgroundType;
+    var audio = this.audio;
 
     readXhr( "data/maps/map" + padZero( mapNr, 2 ) + ".txt", true, function( mapStr ) {
         for ( let i = 0, x = -1, y = 0, pos = -1, len = mapStr.length; i < len; i++ ) {
@@ -337,7 +360,7 @@ class Game {
                 if ( typeIdFg === undefined ) {
                     logError( "unknown map char '" + c + "' [0x" + c.charCodeAt( 0 ).toString( 16 ) + "]" );
                 }
-                typeIdBg = that.data.gameConfig.defaultBackgroundType;
+                typeIdBg = defaultBackgroundType;
             }
 
             bg.setEntity( pos, that.entityFromTypeId( typeIdBg ) );
@@ -349,18 +372,19 @@ class Game {
             }
 
             fg.tiles[pos].addEventListener( "mousedown" /* "click" */, function( evt ) {
-                //logInfo( "pos: " + pos + " X: " + x + " Y: " + y );
+                logDebug( "mousedown: " + pos + " X: " + x + " Y: " + y );
                 if ( evt.button !== 0 ) {
                     return;
                 }
-                if ( !that.ready ) {
+                if ( that.isWaiting() ) {
+                    logDebug( "NOT READY YET" );
                     return;
                 }
                 that.heroActionAt( x, y );
             } );
         }
 
-        that.audio.playBgm( "bgm0" + mapNr + ".mp3" );
+        audio.playBgm( "bgm0" + mapNr + ".mp3" );
         if ( callback !== undefined ) {
             callback();
         }
@@ -377,6 +401,7 @@ class Game {
 
   gameOver() {
     this.audio.playSfx( "scream.mp3" );
+    logInfo( "GAME OVER" );
     alert( "debug: GAME OVER" ); // TEMP
   }
 }
